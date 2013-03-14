@@ -1,16 +1,18 @@
-__author__ = 'b03418'
-
 def getMethods(obj):
     return [e for e in dir(obj) if callable(getattr(obj, e))]
 
 def getAttributes(obj):
     return [prop for (prop,value) in vars(obj).iteritems()]
 
+def createvar_if_not_exists(obj,var,initial):
+    try:
+        getattr(obj,var)
+    except AttributeError:
+        setattr(obj,var,initial)
 
 class MetaBuilder:
 
     #Validators
-
     def validate_type (self,value,expected_type):
         if not type(value) in ([expected_type] + expected_type.__subclasses__()):
             raise TypeError,"Should be of type %s" % expected_type
@@ -34,13 +36,18 @@ class MetaBuilder:
             self._required_args.append(arg)
 
     def model(self,klass):
+        createvar_if_not_exists(self,"_model",klass)
         self._model=klass
 
-    @property
-    def property(self,attribute,*args,**kwargs):
-            pass
+    def property(self,attribute,**kwargs):
+        self.build_validator('validate_{0}'.format(attribute),kwargs)
+        def setAttribute(self, propertyValue):
+            self.value[attribute] = propertyValue
+        def getAttribute(self):
+            return self.value[attribute]
+        setattr(self.__class__, 'set'+ attribute.capitalize(), setAttribute)
+        setattr(self.__class__, 'get'+ attribute.capitalize(), getAttribute)
 
-    property
 
 
 class OptionValueError(StandardError):
