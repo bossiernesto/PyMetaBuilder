@@ -1,5 +1,3 @@
-__author__ = 'b03418'
-
 import unittest
 from PyMetaBuilder import MetaBuilder
 
@@ -9,6 +7,7 @@ class Person:
 class PersonMetaBuilder(MetaBuilder.MetaBuilder):
 
     def __init__(self):
+        MetaBuilder.MetaBuilder.__init__(self)
         self.model(Person)
         self.property('name')
         self.property('age',type=int)
@@ -29,6 +28,13 @@ class PyMetaBuilderTest(unittest.TestCase):
 
     def test_should_able_to_add_model(self):
         self.assertEqual(Person,self.personMeta.getattr("_model"))
+
+    def test_check_propertyset(self):
+        self.assertIn('validate_type_age',dir(self.personMeta))
+
+    def test_get_Validators_name(self):
+        val=self.personMeta._getValidatorsByName('age')
+        self.assertEqual('validate_type',val[0].__name__)
 
     def test_Attributes(self):
         self.assertTrue('name' in MetaBuilder.getAttributes(self.personMeta))
