@@ -1,5 +1,5 @@
 import unittest
-from PyMetaBuilder.property import PropertyBuilder,rebind
+from PyMetaBuilder.property import PropertyBuilder,rebind,PropertyBuilderNoLambda
 from PyMetaBuilder.MetaBuilder import getMethodsByName
 import inspect
 
@@ -25,7 +25,7 @@ class testDynamicProperty(unittest.TestCase):
         self.assertEqual(c.j,2)
 
     def testBuildPropertiesString(self):
-        PropertyBuilder().buildProperty(self.a,'dato',"ddd")
+        PropertyBuilderNoLambda().buildProperty(self.a,'dato',"ddd")
         self.assertEqual(self.a.dato,"ddd")
 
     def testBuildProperties(self):

@@ -5,9 +5,6 @@ import inspect
 def isObjOfType(obj,_type):
     return type(obj) in ([_type] + _type.__subclasses__())
 
-def getMethods(obj):
-    return [e for e in dir(obj) if callable(getattr(obj, e))]
-
 def unbind(f):
     self = getattr(f, '__self__', None)
     if self is not None and not isinstance(self, types.ModuleType) \
@@ -63,3 +60,22 @@ class PropertyBuilder:
     def buildProperty(self, target, propertyName, value):
         self.migrateMethods(target)
         target._injectProperty(propertyName, value)
+
+
+
+def PropertyBuilderNoLambda(PropertyBuilder):
+
+    def buidSetter(self,propertyName):
+        getter="def get{0}(self):" \
+               "    return {1}".format(propertyName,self._getAttrName(propertyName))#Armar un CodeType antes de armar el FunctionType
+        types.FunctionType(getter,None,"get{0}".format(propertyName))
+
+    def buildGetter(self,propertyName,value):
+        return lambda self, value: self._setProperty(propertyName, value)
+
+    def _injectProperty(self,propertyName, value):
+        fget = self.buildGettter(propertyName)
+        fset = self.builderSetter(propertyName, value)
+        setattr(self.__class__, propertyName,property(fget, fset))
+        setattr(self, self._getAttrName(propertyName), value)
+        
