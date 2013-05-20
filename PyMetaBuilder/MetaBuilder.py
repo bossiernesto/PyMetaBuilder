@@ -1,5 +1,4 @@
 import types
-from property import *
 
 def getMethodsByName(obj,name):
     return [method for method in getMethods(obj) if name in method]
@@ -16,7 +15,7 @@ def createvar_if_not_exists(obj, var, initial):
     except AttributeError:
         setattr(obj, var, initial)
 
-class MetaBuilder(PropertyBuilder):
+class MetaBuilder():
 
     def __init__(self):
         self.prefix = 'validate_'
@@ -67,10 +66,30 @@ class MetaBuilder(PropertyBuilder):
         """
         callback=self.getCallback(*args,**kwargs)
         if callback:
-            self.__dict__[callback.__name__+'_'+attribute]=types.MethodType(callback,self)
-        self.buildProperty(self,attribute,None)
+            callbackName=callback.__name__+'_'+attribute
+            self.__dict__[callbackName]=types.MethodType(callback,self)
         #create setter and getters
+        self.buildProperty(attribute,callbackName)
 
+    def buildProperty(self,attributeName,callbackName=None):
+        self.buildGetter(attributeName)
+        self.buildSetter(attributeName,callbackName)
+
+    def buildGetter(self,propertyName):
+        setter="def set{0}(self):" \
+               "    return _{1}".format(propertyName,self._getAttrName(propertyName))
+        self.createFunction(self.__class__,"get{0}".format(propertyName),setter)
+
+    def buildSetter(self,propertyName,callbackName):
+        getter="def set{0}(self,value):" \
+               "    {1}(value)" \
+               "    _{2}=value".format(propertyName,callbackName,self._getAttrName(propertyName))#Armar un CodeType antes de armar el FunctionType
+        self.createFunction(self.__class__,"get{0}".format(propertyName),getter)
+
+    def createFunction(self,klass,methodName,code):
+        d = {}
+        exec code.strip() in d
+        setattr(klass,methodName, d[methodName])
 
     def getCallback(self,*args,**kwargs):
         for kwarg,validateArg in kwargs.iteritems():
