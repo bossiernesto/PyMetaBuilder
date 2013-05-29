@@ -4,6 +4,14 @@ import string
 def getMethodsByName(obj,name):
     return [method for method in getMethods(obj) if name in method]
 
+def get_class( klass ):
+    parts = klass.split('.')
+    module = ".".join(parts[:-1])
+    m = __import__( module )
+    for comp in parts[1:]:
+        m = getattr(m, comp)
+    return m
+
 def bind(f,obj):
     obj.__dict__[f.__name__]=MethodType(f,obj,obj.__class__)
 
@@ -157,12 +165,13 @@ class MetaBuilder(object):
     def build(self):
         for required in self._required_args:
             isAttributeDefined(self,required)
-        instance=eval(self._model.__name__+"()")
+        instance=get_class(self._model.__module__+'.'+self._model.__name__)
         for prop in self.getProperties():
             for meth in [getattr(self,m) for m in getMethodsByName(self,prop)]:
                 if self.prefix in meth.__name__:
                     instance.__dict__[meth.__name__+'_'+prop]=MethodType(unbind(meth),self)
                 else:
+                    print meth.__name__
                     instance.__dict__[meth.__name__]=self.__dict__[meth.__name__]
             getter=getattr(instance,'get{0}'.format(prop))
             setter=getattr(instance,'set{0}'.format(prop))
