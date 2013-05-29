@@ -153,7 +153,7 @@ class MetaBuilder(object):
         return klass.__dict__[methodName]
 
     def getCallback(self, *args, **kwargs):
-        for kwarg,validateArg in kwargs.iteritems():
+        for kwarg, validateArg in kwargs.iteritems():
             for callbackname, callback in self.callbacks.iteritems():
                 if callbackname == kwarg:
                     return callback
