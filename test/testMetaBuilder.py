@@ -1,7 +1,7 @@
 from unittest import TestCase,skip
 from PyMetaBuilder import MetaBuilder
 
-class Person:
+class Person(object):
     pass
 
 class PersonMetaBuilder(MetaBuilder.MetaBuilder):
@@ -61,14 +61,12 @@ class PyMetaBuilderTest(TestCase):
             self.personMeta.job='ssse'
         self.assertRaises(MetaBuilder.OptionValueError,setJob)
 
-    @skip('Not Implemented yet')
     def testRequiredNotFilled(self):
         def buildWithouthRequired():
             self.personMeta.age=20
             self.personMeta.build()
-        self.assertRaises(TypeError,buildWithouthRequired)
+        self.assertRaises(AttributeError,buildWithouthRequired)
 
-    @skip('Not Implemented yet')
     def test_build(self):
         self.personMeta.age=50
         self.personMeta.name='Jhon Doe'

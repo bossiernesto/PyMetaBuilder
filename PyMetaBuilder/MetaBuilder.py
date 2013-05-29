@@ -4,6 +4,11 @@ import string
 def getMethodsByName(obj,name):
     return [method for method in getMethods(obj) if name in method]
 
+def bind(f,obj):
+    obj.__dict__[f.__name__]=MethodType(f,obj,obj.__class__)
+
+rebind= lambda f,obj: bind(unbind(f),obj)
+
 def getMethods(obj):
     ret=[]
     for e in dir(obj):
@@ -13,6 +18,11 @@ def getMethods(obj):
         except AttributeError:
             pass
     return ret
+
+def isAttributeDefined(obj,attribute):
+    if hasattr(obj,attribute)  and getattr(obj,attribute) is not None:
+        return
+    raise AttributeError('Attribute {0} is not defined'.format(attribute))
 
 def getAttributes(obj):
     return [prop for (prop,value) in vars(obj).iteritems()]
@@ -94,8 +104,11 @@ class MetaBuilder(object):
     def buildProperty(self,attributeName,callbackName=None,callbackarg=None):
         getter=self.buildGetter(attributeName)
         setter=self.buildSetter(attributeName,callbackName,callbackarg)
-        setattr(self.__class__,attributeName,property(fget=getter,fset=setter))
-        setattr(self, self._getAttrName(attributeName), None)
+        self.setProperty(self,attributeName,getter,setter,None)
+
+    def setProperty(self,obj,attributeName,getter,setter,defaultValue=None):
+        setattr(obj.__class__,attributeName,property(fget=getter,fset=setter))
+        setattr(obj, '_'+attributeName, defaultValue)
 
     def getSignatureString(self,methodString):
         return methodString[methodString.find("def")+3:methodString.find("(")].strip()
@@ -119,7 +132,6 @@ class MetaBuilder(object):
         dict = {}
         methodName=self.getSignatureString(code)
         exec code.strip() in dict
-        #print code
         klass.__dict__[methodName]=dict[methodName]
         return klass.__dict__[methodName]
 
@@ -142,6 +154,21 @@ class MetaBuilder(object):
         start=['_model','callbacks','validators','_required_args','prefix']
         return [string.replace(k,'_','') for k in getAttributes(self) if k not in getMethods(self)+start]
 
+    def build(self):
+        for required in self._required_args:
+            isAttributeDefined(self,required)
+        instance=eval(self._model.__name__+"()")
+        for prop in self.getProperties():
+            for meth in [getattr(self,m) for m in getMethodsByName(self,prop)]:
+                if self.prefix in meth.__name__:
+                    instance.__dict__[meth.__name__+'_'+prop]=MethodType(unbind(meth),self)
+                else:
+                    instance.__dict__[meth.__name__]=self.__dict__[meth.__name__]
+            getter=getattr(instance,'get{0}'.format(prop))
+            setter=getattr(instance,'set{0}'.format(prop))
+            self.setProperty(instance,prop,getter,setter,getattr(self,'_'+prop))
+        return instance
+
 class OptionValueError(StandardError):
     def __init__(self, *args, **kwargs):
         StandardError.__init__(self, *args, **kwargs)
@@ -150,10 +177,20 @@ class ValidatorError(StandardError):
     def __init__(self, *args, **kwargs):
         StandardError.__init__(self, *args, **kwargs)
 
+class A(object):
+    pass
+
 class MyMeta(MetaBuilder):
     pass
 
 if __name__=='__main__':
     a=MyMeta()
+    a.model(A)
     a.property('saraza',one_of=["doctor", "musician"])
-    a.saraza='doctor'
+    a.required('saraza')
+    a.saraza="doctor"
+    isAttributeDefined(a,'saraza')
+    ainst=a.build()
+    del a
+    ainst.saraza="sician"
+    print ainst._saraza
