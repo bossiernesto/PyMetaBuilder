@@ -71,4 +71,4 @@ class PyMetaBuilderTest(TestCase):
         self.personMeta.age=50
         self.personMeta.name='Jhon Doe'
         instance=self.personMeta.build()
-        self.assertIsInstance(instance,Person.__class__)
+        self.assertIsInstance(instance,Person)

@@ -165,13 +165,13 @@ class MetaBuilder(object):
     def build(self):
         for required in self._required_args:
             isAttributeDefined(self,required)
-        instance=get_class(self._model.__module__+'.'+self._model.__name__)
+        klass=get_class(self._model.__module__+'.'+self._model.__name__)
+        instance=klass()
         for prop in self.getProperties():
             for meth in [getattr(self,m) for m in getMethodsByName(self,prop)]:
                 if self.prefix in meth.__name__:
                     instance.__dict__[meth.__name__+'_'+prop]=MethodType(unbind(meth),self)
                 else:
-                    print meth.__name__
                     instance.__dict__[meth.__name__]=self.__dict__[meth.__name__]
             getter=getattr(instance,'get{0}'.format(prop))
             setter=getattr(instance,'set{0}'.format(prop))
