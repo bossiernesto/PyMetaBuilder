@@ -1,10 +1,18 @@
-import types
+from types import MethodType,ModuleType
+import string
 
 def getMethodsByName(obj,name):
     return [method for method in getMethods(obj) if name in method]
 
 def getMethods(obj):
-    return [e for e in dir(obj) if callable(getattr(obj, e))]
+    ret=[]
+    for e in dir(obj):
+        try:
+            if callable(getattr(obj, e)):
+                ret.append(e)
+        except AttributeError:
+            pass
+    return ret
 
 def getAttributes(obj):
     return [prop for (prop,value) in vars(obj).iteritems()]
@@ -15,7 +23,16 @@ def createvar_if_not_exists(obj, var, initial):
     except AttributeError:
         setattr(obj, var, initial)
 
-class MetaBuilder():
+def unbind(f):
+    self = getattr(f, '__self__', None)
+    if self is not None and not isinstance(self, ModuleType)\
+    and not isinstance(self, type):
+        if hasattr(f, '__func__'):
+            return f.__func__
+        return getattr(type(f.__self__), f.__name__)
+    raise TypeError('not a bound method')
+
+class MetaBuilder(object):
 
     def __init__(self):
         self.prefix = 'validate_'
@@ -32,24 +49,24 @@ class MetaBuilder():
         return [getattr(self,val) for val in self._get_Validators() if name in val]
 
     def validate_type (self,value,expected_type):
-        if not type(value) in ([expected_type] + expected_type.__subclasses__()):
-            raise TypeError,"Should be of type %s" % expected_type
+        if not type(value) in ([expected_type]):
+            raise TypeError,"Should be of type {0}".format(expected_type)
 
     def validate_one_of(self,value,options):
         if value not in options:
-            raise OptionValueError,"Value %s not in expected options" % value
+            raise OptionValueError,"Value {0} not in expected options".format(value)
 
     def validate_validates(self,value,method):
         return self.customMethodValidator(value,method)
 
     def customMethodValidator(self,value,method):
         if not callable(method):
-            raise TypeError,"%s is not a method or callable one" % method
+            raise TypeError,"{0} is not a method or callable one".format(method)
         try:
             if not method(value):
-                raise ValidatorError,"Value %s did not passed validation %s"  % (value,method)
+                raise ValidatorError,"Value {0} did not passed validation {1}".format(value,method)
         except TypeError,e:
-            raise ValidatorError,e,'Problem calling method %s' % method
+            raise ValidatorError,e,'Problem calling method {0}'.format(method)
 
     def required(self,*args,**kwargs):
         self._required_args=[]
@@ -67,29 +84,44 @@ class MetaBuilder():
         callback=self.getCallback(*args,**kwargs)
         if callback:
             callbackName=callback.__name__+'_'+attribute
-            self.__dict__[callbackName]=types.MethodType(callback,self)
-        #create setter and getters
-        self.buildProperty(attribute,callbackName)
+            self.__dict__[callbackName]=MethodType(unbind(callback),self)
+            callbackarg=self.getCallbackArg(callbackName,*args,**kwargs)
+            #create setter and getters
+            self.buildProperty(attribute,callbackName,callbackarg)
+        else:
+            self.buildProperty(attribute,None,None)
 
-    def buildProperty(self,attributeName,callbackName=None):
-        self.buildGetter(attributeName)
-        self.buildSetter(attributeName,callbackName)
+    def buildProperty(self,attributeName,callbackName=None,callbackarg=None):
+        getter=self.buildGetter(attributeName)
+        setter=self.buildSetter(attributeName,callbackName,callbackarg)
+        setattr(self.__class__,attributeName,property(fget=getter,fset=setter))
+        setattr(self, self._getAttrName(attributeName), None)
+
+    def getSignatureString(self,methodString):
+        return methodString[methodString.find("def")+3:methodString.find("(")].strip()
+
+    def _getAttrName(self,propertyName):
+        return '_'+propertyName
 
     def buildGetter(self,propertyName):
-        setter="def set{0}(self):" \
-               "    return _{1}".format(propertyName,self._getAttrName(propertyName))
-        self.createFunction(self.__class__,"get{0}".format(propertyName),setter)
+        getter="def get{0}(self):\n" \
+               "    return self.{1}".format(propertyName,self._getAttrName(propertyName))
+        return self.createFunction(self,getter)
 
-    def buildSetter(self,propertyName,callbackName):
-        getter="def set{0}(self,value):" \
-               "    {1}(value)" \
-               "    _{2}=value".format(propertyName,callbackName,self._getAttrName(propertyName))#Armar un CodeType antes de armar el FunctionType
-        self.createFunction(self.__class__,"get{0}".format(propertyName),getter)
+    def buildSetter(self,propertyName,callbackName=None,callbackarg=None):
+        callback='' if callbackName is None else 'self.{0}(value,{1})'.format(callbackName,callbackarg)
+        setter="def set{0}(self,value):\n" \
+               "    {1}\n" \
+               "    self.{2}=value".format(propertyName,callback.strip(),self._getAttrName(propertyName))#Armar un CodeType antes de armar el FunctionType
+        return self.createFunction(self,setter)
 
-    def createFunction(self,klass,methodName,code):
-        d = {}
-        exec code.strip() in d
-        setattr(klass,methodName, d[methodName])
+    def createFunction(self,klass,code):
+        dict = {}
+        methodName=self.getSignatureString(code)
+        exec code.strip() in dict
+        #print code
+        klass.__dict__[methodName]=dict[methodName]
+        return klass.__dict__[methodName]
 
     def getCallback(self,*args,**kwargs):
         for kwarg,validateArg in kwargs.iteritems():
@@ -97,6 +129,18 @@ class MetaBuilder():
                 if callbackname==kwarg:
                     return callback
             return None
+
+    def getCallbackArg(self,callbackName,*args,**kwargs):
+        argumentName,argument=kwargs.popitem()
+        _name=['type','validates']
+        for n in _name:
+            if n in callbackName:
+                return argument.__name__
+        return argument
+
+    def getProperties(self):
+        start=['_model','callbacks','validators','_required_args','prefix']
+        return [string.replace(k,'_','') for k in getAttributes(self) if k not in getMethods(self)+start]
 
 class OptionValueError(StandardError):
     def __init__(self, *args, **kwargs):
@@ -106,11 +150,10 @@ class ValidatorError(StandardError):
     def __init__(self, *args, **kwargs):
         StandardError.__init__(self, *args, **kwargs)
 
-class MyBuilder(MetaBuilder):
+class MyMeta(MetaBuilder):
     pass
 
-if __name__ == '__main__':
-    a=MyBuilder()
-    a.property('bleh',type=int)
-
-
+if __name__=='__main__':
+    a=MyMeta()
+    a.property('saraza',one_of=["doctor", "musician"])
+    a.saraza='doctor'

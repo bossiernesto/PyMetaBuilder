@@ -1,4 +1,4 @@
-import unittest
+from unittest import TestCase,skip
 from PyMetaBuilder import MetaBuilder
 
 class Person:
@@ -18,36 +18,59 @@ class PersonMetaBuilder(MetaBuilder.MetaBuilder):
     def myvalidator(self,value):
         pass
 
-class PyMetaBuilderTest(unittest.TestCase):
+class PyMetaBuilderTest(TestCase):
 
     def setUp(self):
         self.personMeta=PersonMetaBuilder()
+        self.personMeta=PersonMetaBuilder()
 
-    def test_hierarchy(self):
+    def testHierarchy(self):
         self.assertIsInstance(self.personMeta,MetaBuilder.MetaBuilder)
 
-    def test_should_able_to_add_model(self):
-        self.assertEqual(Person,self.personMeta.getattr("_model"))
+    def testShouldAbleToAddModel(self):
+        self.assertEqual(Person,self.personMeta.__getattribute__("_model"))
 
-    def test_check_propertyset(self):
-        self.assertIn('validate_type_age',dir(self.personMeta))
+    def testCheckPropertyset(self):
+        self.assertIn('validate_type_age',MetaBuilder.getMethods(self.personMeta))
 
-    def test_get_Validators_name(self):
+    def testGetValidatorsName(self):
         val=self.personMeta._getValidatorsByName('age')
         self.assertEqual('validate_type',val[0].__name__)
 
-    def test_Attributes(self):
-        self.assertTrue('name' in MetaBuilder.getAttributes(self.personMeta))
-        self.assertTrue('age' in MetaBuilder.getAttributes(self.personMeta))
-        self.assertTrue('job' in MetaBuilder.getAttributes(self.personMeta))
-        self.assertTrue('height' in MetaBuilder.getAttributes(self.personMeta))
+    def testAttributes(self):
+        self.assertTrue('name' in self.personMeta.getProperties())
+        self.assertTrue('age' in self.personMeta.getProperties())
+        self.assertTrue('job' in self.personMeta.getProperties())
+        self.assertTrue('height' in self.personMeta.getProperties())
 
-    def set_correctAttribute(self):
+    def testCorrectAttributeType(self):
         self.personMeta.age=50
+        self.assertEqual(50,self.personMeta.age)
 
+    def testIncorrectAttributeType(self):
+        def setAge():
+            self.personMeta.age='ssse'
+        self.assertRaises(TypeError,setAge)
 
-def test_something(self):
-        self.assertEqual(True, False)
+    def testCorrectAttributeOptions(self):
+        self.personMeta.job="doctor"
+        self.assertEqual("doctor",self.personMeta.job)
 
-if __name__ == '__main__':
-    unittest.main()
+    def testIncorrectAttributeOptions(self):
+        def setJob():
+            self.personMeta.job='ssse'
+        self.assertRaises(MetaBuilder.OptionValueError,setJob)
+
+    @skip('Not Implemented yet')
+    def testRequiredNotFilled(self):
+        def buildWithouthRequired():
+            self.personMeta.age=20
+            self.personMeta.build()
+        self.assertRaises(TypeError,buildWithouthRequired)
+
+    @skip('Not Implemented yet')
+    def test_build(self):
+        self.personMeta.age=50
+        self.personMeta.name='Jhon Doe'
+        instance=self.personMeta.build()
+        self.assertIsInstance(instance,Person.__class__)
