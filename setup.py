@@ -5,7 +5,7 @@ setup(name="PyMetaBuilder",
       description="",
       author="Ernesto Bossi",
       author_email="bossi.ernestog@gmail.com",
-      url="",
+      url="https://github.com/bossiernesto/PyMetaBuilder",
       license="GPL",
       py_modules=["PyMetaBuilder"]
 )
