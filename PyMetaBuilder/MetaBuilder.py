@@ -189,10 +189,8 @@ class MetaBuilder(object):
 
 
 class OptionValueError(StandardError):
-    def __init__(self, *args, **kwargs):
-        StandardError.__init__(self, *args, **kwargs)
+    pass
 
 
 class ValidatorError(StandardError):
-    def __init__(self, *args, **kwargs):
-        StandardError.__init__(self, *args, **kwargs)
+    pass
