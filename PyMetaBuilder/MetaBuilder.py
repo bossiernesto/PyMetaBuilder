@@ -188,9 +188,5 @@ class MetaBuilder(object):
         return instance
 
 
-class OptionValueError(StandardError):
-    pass
-
-
-class ValidatorError(StandardError):
-    pass
+class OptionValueError(StandardError): pass
+class ValidatorError(StandardError): pass
