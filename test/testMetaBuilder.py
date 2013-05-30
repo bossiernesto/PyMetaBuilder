@@ -5,7 +5,6 @@ from PyMetaBuilder import MetaBuilder
 class Person(object):
     pass
 
-
 class PersonMetaBuilder(MetaBuilder.MetaBuilder):
 
     def __init__(self):
@@ -14,17 +13,16 @@ class PersonMetaBuilder(MetaBuilder.MetaBuilder):
         self.property('name')
         self.property('age', type=int)
         self.property('job', one_of=["doctor", "musician"])
-        self.property('height', validates=self.myvalidator)
+        self.property('height', validates=self.myValidator)
         self.required('name')
 
-    def myvalidator(self, value):
-        pass
+    def myValidator(self, value):
+        return 1 < value <= 2.3
 
 
 class PyMetaBuilderTest(TestCase):
 
     def setUp(self):
-        self.personMeta = PersonMetaBuilder()
         self.personMeta = PersonMetaBuilder()
 
     def testHierarchy(self):
@@ -63,6 +61,15 @@ class PyMetaBuilderTest(TestCase):
         def setJob():
             self.personMeta.job = 'ssse'
         self.assertRaises(MetaBuilder.OptionValueError, setJob)
+
+    def testCorrectCustomValidator(self):
+        self.personMeta.height = 2
+        self.assertEqual(2, self.personMeta.height)
+
+    def testCorrectCustomValidator(self):
+        def setMyHeight():
+            self.personMeta.height = 22
+        self.assertRaises(MetaBuilder.ValidatorError, setMyHeight)
 
     def testRequiredNotFilled(self):
         def buildWithouthRequired():

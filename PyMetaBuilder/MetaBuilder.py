@@ -22,7 +22,6 @@ rebind = lambda f, obj: bind(unbind(f), obj)
 
 
 def getMethods(obj):
-
     ret = []
     for e in dir(obj):
         try:
@@ -43,7 +42,7 @@ def getAttributes(obj):
     return [prop for (prop, value) in vars(obj).iteritems()]
 
 
-def createvar_if_not_exists(obj, var, initial):
+def createvarIfNotExists(obj, var, initial):
     try:
         getattr(obj, var)
     except AttributeError:
@@ -67,6 +66,7 @@ class MetaBuilder(object):
         self.callbacks = dict()
         for v in self.validators:
             self.callbacks[v.split(self.prefix)[1]] = getattr(self, v)
+        self.start = ['start', '_model', '_required_args']+ getAttributes(self)
 
     #Validators
     def _get_Validators(self):
@@ -84,7 +84,8 @@ class MetaBuilder(object):
             raise OptionValueError("Value {0} not in expected options".format(value))
 
     def validate_validates(self, value, method):
-        return self.customMethodValidator(value, method)
+        methodCall = getattr(self, method)
+        self.customMethodValidator(value, methodCall)
 
     def customMethodValidator(self, value, method):
         if not callable(method):
@@ -101,7 +102,7 @@ class MetaBuilder(object):
             self._required_args.append(arg)
 
     def model(self, klass):
-        createvar_if_not_exists(self, "_model", klass)
+        createvarIfNotExists(self, "_model", klass)
         self._model = klass
 
     def property(self, attribute, *args, **kwargs):
@@ -161,15 +162,14 @@ class MetaBuilder(object):
 
     def getCallbackArg(self, callbackName, *args, **kwargs):
         argumentName, argument = kwargs.popitem()
-        _name = ['type', 'validates']
-        for n in _name:
+        _name = {'type': lambda arg: arg.__name__, 'validates': lambda arg: "'{0}'".format(arg.__name__)}
+        for n, a in _name.iteritems():
             if n in callbackName:
-                return argument.__name__
+                return a(argument)
         return argument
 
     def getProperties(self):
-        start = ['_model', 'callbacks', 'validators', '_required_args', 'prefix']
-        return [string.replace(k, '_', '') for k in getAttributes(self) if k not in getMethods(self)+start]
+        return [string.replace(k, '_', '') for k in getAttributes(self) if k not in getMethods(self)+self.start]
 
     def build(self):
         for required in self._required_args:
