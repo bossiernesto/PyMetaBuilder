@@ -1,4 +1,4 @@
-from unittest import TestCase, skip
+from unittest import TestCase
 from PyMetaBuilder import MetaBuilder
 
 

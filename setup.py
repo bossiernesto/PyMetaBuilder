@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(name="PyMetaBuilder",
-      version="0.1",
+      version="0.11",
       description="Small framework for creating Builders and entities",
       author="Ernesto Bossi",
       author_email="bossi.ernestog@gmail.com",

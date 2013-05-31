@@ -2,8 +2,8 @@ from types import MethodType, ModuleType
 import string
 
 
-def getMethodsByName(obj, name):
-    return [method for method in getMethods(obj) if name in method]
+def getMethodsByName(p_object, name):
+    return [method for method in getMethods(p_object) if name in method]
 
 
 def get_class(klass):
@@ -13,12 +13,6 @@ def get_class(klass):
     for comp in parts[1:]:
         m = getattr(m, comp)
     return m
-
-
-def bind(f, obj):
-    obj.__dict__[f.__name__] = MethodType(f, obj, obj.__class__)
-
-rebind = lambda f, obj: bind(unbind(f), obj)
 
 
 def getMethods(obj):
@@ -93,8 +87,8 @@ class MetaBuilder(object):
         try:
             if not method(value):
                 raise ValidatorError("Value {0} did not passed validation {1}".format(value, method))
-        except TypeError, e:
-            raise ValidatorError(e, 'Problem calling method {0}'.format(method))
+        except TypeError:
+            raise ValidatorError('Problem calling method {0}'.format(method))
 
     def required(self, *args, **kwargs):
         self._required_args = []
@@ -111,8 +105,8 @@ class MetaBuilder(object):
         """
         callback = self.getCallback(*args, **kwargs)
         if callback:
-            callbackName = callback.__name__+'_'+attribute
-            self.__dict__[callbackName] = MethodType(unbind(callback), self)
+            callbackName = callback.__name__ + '_' + attribute
+            setattr(self, callbackName,MethodType(unbind(callback), self))
             callbackarg = self.getCallbackArg(callbackName, *args, **kwargs)
             #create setter and getters
             self.buildProperty(attribute, callbackName, callbackarg)
@@ -126,13 +120,13 @@ class MetaBuilder(object):
 
     def setProperty(self, obj, attributeName, getter, setter, defaultValue=None):
         setattr(obj.__class__, attributeName, property(fget=getter, fset=setter))
-        setattr(obj, '_'+attributeName, defaultValue)
+        setattr(obj, '_' + attributeName, defaultValue)
 
     def getSignatureString(self, methodString):
-        return methodString[methodString.find("def")+3:methodString.find("(")].strip()
+        return methodString[methodString.find("def") + 3:methodString.find("(")].strip()
 
     def _getAttrName(self, propertyName):
-        return '_'+propertyName
+        return '_' + propertyName
 
     def buildGetter(self, propertyName):
         getter = "def get{0}(self):\n" \
@@ -149,8 +143,8 @@ class MetaBuilder(object):
     def createFunction(self, klass, code):
         dict = {}
         methodName = self.getSignatureString(code)
-        exec code.strip() in dict
-        klass.__dict__[methodName] = dict[methodName]
+        exec(code.strip(),globals(), dict)
+        setattr(klass,methodName, dict[methodName])
         return klass.__dict__[methodName]
 
     def getCallback(self, *args, **kwargs):
@@ -169,24 +163,28 @@ class MetaBuilder(object):
         return argument
 
     def getProperties(self):
-        return [string.replace(k, '_', '') for k in getAttributes(self) if k not in getMethods(self)+self.start]
+        return [string.replace(k, '_', '') for k in getAttributes(self) if k not in getMethods(self) + self.start]
 
     def build(self):
         for required in self._required_args:
             isAttributeDefined(self, required)
-        klass = get_class(self._model.__module__+'.'+self._model.__name__)
+        klass = get_class(self._model.__module__ + '.' + self._model.__name__)
         instance = klass()
         for prop in self.getProperties():
             for method in [getattr(self, m) for m in getMethodsByName(self, prop)]:
                 if self.prefix in method.__name__:
-                    instance.__dict__[method.__name__+'_'+prop] = MethodType(unbind(method), self)
+                    setattr(instance, method.__name__ + '_' + prop, MethodType(unbind(method), self))
                 else:
-                    instance.__dict__[method.__name__] = self.__dict__[method.__name__]
+                    setattr(instance, method.__name__, getattr(self, method.__name__))
             getter = getattr(instance, 'get{0}'.format(prop))
             setter = getattr(instance, 'set{0}'.format(prop))
-            self.setProperty(instance, prop, getter, setter, getattr(self, '_'+prop))
+            self.setProperty(instance, prop, getter, setter, getattr(self, '_' + prop))
         return instance
 
 
-class OptionValueError(StandardError): pass
-class ValidatorError(StandardError): pass
+class OptionValueError(Exception):
+    pass
+
+
+class ValidatorError(Exception):
+    pass
