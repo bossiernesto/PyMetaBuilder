@@ -1,46 +1,6 @@
 from types import MethodType, ModuleType
 import string
-
-
-def getMethodsByName(p_object, name):
-    return [method for method in getMethods(p_object) if name in method]
-
-
-def get_class(klass):
-    parts = klass.split('.')
-    module = ".".join(parts[:-1])
-    m = __import__(module)
-    for comp in parts[1:]:
-        m = getattr(m, comp)
-    return m
-
-
-def getMethods(obj):
-    ret = []
-    for e in dir(obj):
-        try:
-            if callable(getattr(obj, e)):
-                ret.append(e)
-        except AttributeError:
-            pass
-    return ret
-
-
-def isAttributeDefined(obj, attribute):
-    if hasattr(obj, attribute) and getattr(obj, attribute) is not None:
-        return
-    raise AttributeError('Attribute {0} is not defined'.format(attribute))
-
-
-def getAttributes(obj):
-    return [prop for (prop, value) in vars(obj).iteritems()]
-
-
-def createvarIfNotExists(obj, var, initial):
-    try:
-        getattr(obj, var)
-    except AttributeError:
-        setattr(obj, var, initial)
+from metaUtils import *
 
 
 def unbind(f):
@@ -103,11 +63,11 @@ class MetaBuilder(object):
         """
         self.property('age',type=int)
         """
-        callback = self.getCallback(*args, **kwargs)
+        callback, callbackarg = self.getCallback(*args, **kwargs)
         if callback:
             callbackName = callback.__name__ + '_' + attribute
             setattr(self, callbackName,MethodType(unbind(callback), self))
-            callbackarg = self.getCallbackArg(callbackName, *args, **kwargs)
+            callbackarg = self.processCallbackArg(callbackarg)
             #create setter and getters
             self.buildProperty(attribute, callbackName, callbackarg)
         else:
@@ -151,16 +111,15 @@ class MetaBuilder(object):
         for kwarg, validateArg in kwargs.iteritems():
             for callbackname, callback in self.callbacks.iteritems():
                 if callbackname == kwarg:
-                    return callback
-            return None
+                    return callback, validateArg
+        return None, None
 
-    def getCallbackArg(self, callbackName, *args, **kwargs):
-        argumentName, argument = kwargs.popitem()
-        _name = {'type': lambda arg: arg.__name__, 'validates': lambda arg: "'{0}'".format(arg.__name__)}
-        for n, a in _name.iteritems():
-            if n in callbackName:
-                return a(argument)
-        return argument
+    def processCallbackArg(self, callbackArg):
+        calltype=type(callbackArg).__name__
+        _name = {'type': lambda arg: arg.__name__, 'instancemethod': lambda arg: "'{0}'".format(arg.__name__)}
+        if calltype in _name.keys():
+            return _name[calltype](callbackArg)
+        return callbackArg
 
     def getProperties(self):
         return [string.replace(k, '_', '') for k in getAttributes(self) if k not in getMethods(self) + self.start]
