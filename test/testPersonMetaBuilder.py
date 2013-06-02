@@ -78,6 +78,11 @@ class PyMetaBuilderTest(TestCase):
             self.personMeta.build()
         self.assertRaises(AttributeError, buildWithouthRequired)
 
+    def testReservedAttribute(self):
+        def reservedWord():
+            self.personMeta.property("_model")
+        self.assertRaises(MetaBuilder.MetaBuilderError, reservedWord)
+
     def test_build(self):
         self.personMeta.age = 50
         self.personMeta.name = 'Jhon Doe'

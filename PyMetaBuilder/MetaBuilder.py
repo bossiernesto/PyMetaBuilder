@@ -14,17 +14,20 @@ def unbind(f):
 class MetaBuilder(object):
 
     def __init__(self):
-        self.prefix = 'validate_'
-        self.validators = self._get_Validators()
-        self.callbacks = dict()
-        for v in self.validators:
-            self.callbacks[v.split(self.prefix)[1]] = getattr(self, v)
+        self._prefix = 'validate_'
+        self._validators = self._get_Validators()
+        self._callbacks = dict()
+        for v in self._validators:
+            self._callbacks[v.split(self._prefix)[1]] = getattr(self, v)
         self._properties = []
-        self._reserved = ['_reserved', '_model', '_required_args']
+        self._required_args = []
+        self._reserved = getAttributes(self) + ['_model']
+
+    isReserved = lambda self, prop: prop in self._reserved
 
     #Validators
     def _get_Validators(self):
-        return getMethodsByName(self, self.prefix)
+        return getMethodsByName(self, self._prefix)
 
     def _getValidatorsByName(self, name):
         return [getattr(self, val) for val in self._get_Validators() if name in val]
@@ -51,7 +54,6 @@ class MetaBuilder(object):
             raise ValidatorError('Problem calling method {0}'.format(method))
 
     def required(self, *args, **kwargs):
-        self._required_args = []
         for arg in args:
             self._required_args.append(arg)
 
@@ -63,9 +65,11 @@ class MetaBuilder(object):
         """
         self.property('age',type=int)
         """
+        if self.isReserved(attribute):
+            raise MetaBuilderError("Attribute name {0} is a reserved word")
         callback, callbackarg = self.getCallback(*args, **kwargs)
         if callback:
-            callbackName = callback.__name__ + '_' + attribute
+            callbackName = callback.__name__ + self._getAttrName(attribute)
             setattr(self, callbackName, MethodType(unbind(callback), self))
             #create setter and getters
             self.buildProperty(attribute, callbackName, callbackarg)
@@ -80,7 +84,7 @@ class MetaBuilder(object):
 
     def setProperty(self, obj, attributeName, getter, setter, defaultValue=None):
         setattr(obj.__class__, attributeName, property(fget=getter, fset=setter))
-        setattr(obj, '_' + attributeName, defaultValue)
+        setattr(obj, self._getAttrName(attributeName), defaultValue)
 
     def getSignatureString(self, methodString):
         return methodString[methodString.find("def") + 3:methodString.find("(")].strip()
@@ -109,7 +113,7 @@ class MetaBuilder(object):
 
     def getCallback(self, *args, **kwargs):
         for kwarg, validateArg in kwargs.iteritems():
-            for callbackname, callback in self.callbacks.iteritems():
+            for callbackname, callback in self._callbacks.iteritems():
                 if callbackname == kwarg:
                     return callback, self.processCallbackArg(validateArg)
         return None, None
@@ -131,13 +135,13 @@ class MetaBuilder(object):
         instance = klass()
         for prop in self.properties():
             for method in [getattr(self, m) for m in getMethodsByName(self, prop)]:
-                if self.prefix in method.__name__:
-                    setattr(instance, method.__name__ + '_' + prop, MethodType(unbind(method), self))
+                if self._prefix in method.__name__:
+                    setattr(instance, method.__name__ + self._getAttrName(prop), MethodType(unbind(method), self))
                 else:
                     setattr(instance, method.__name__, getattr(self, method.__name__))
             getter = getattr(instance, 'get{0}'.format(prop))
             setter = getattr(instance, 'set{0}'.format(prop))
-            self.setProperty(instance, prop, getter, setter, getattr(self, '_' + prop))
+            self.setProperty(instance, prop, getter, setter, getattr(self, self._getAttrName(prop)))
         return instance
 
 
@@ -146,4 +150,8 @@ class OptionValueError(Exception):
 
 
 class ValidatorError(Exception):
+    pass
+
+
+class MetaBuilderError(Exception):
     pass
