@@ -5,6 +5,7 @@ from PyMetaBuilder import MetaBuilder
 class Person(object):
     pass
 
+
 class PersonMetaBuilder(MetaBuilder.MetaBuilder):
 
     def __init__(self):
@@ -39,10 +40,10 @@ class PyMetaBuilderTest(TestCase):
         self.assertEqual('validate_type', val[0].__name__)
 
     def testAttributes(self):
-        self.assertTrue('name' in self.personMeta.getProperties())
-        self.assertTrue('age' in self.personMeta.getProperties())
-        self.assertTrue('job' in self.personMeta.getProperties())
-        self.assertTrue('height' in self.personMeta.getProperties())
+        self.assertTrue('name' in self.personMeta.properties())
+        self.assertTrue('age' in self.personMeta.properties())
+        self.assertTrue('job' in self.personMeta.properties())
+        self.assertTrue('height' in self.personMeta.properties())
 
     def testCorrectAttributeType(self):
         self.personMeta.age = 50

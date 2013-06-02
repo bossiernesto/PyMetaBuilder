@@ -1,5 +1,4 @@
 from types import MethodType, ModuleType
-import string
 from metaUtils import *
 
 
@@ -20,7 +19,8 @@ class MetaBuilder(object):
         self.callbacks = dict()
         for v in self.validators:
             self.callbacks[v.split(self.prefix)[1]] = getattr(self, v)
-        self.start = ['start', '_model', '_required_args']+ getAttributes(self)
+        self._properties = []
+        self._reserved = ['_reserved', '_model', '_required_args']
 
     #Validators
     def _get_Validators(self):
@@ -66,12 +66,12 @@ class MetaBuilder(object):
         callback, callbackarg = self.getCallback(*args, **kwargs)
         if callback:
             callbackName = callback.__name__ + '_' + attribute
-            setattr(self, callbackName,MethodType(unbind(callback), self))
-            callbackarg = self.processCallbackArg(callbackarg)
+            setattr(self, callbackName, MethodType(unbind(callback), self))
             #create setter and getters
             self.buildProperty(attribute, callbackName, callbackarg)
         else:
             self.buildProperty(attribute, None, None)
+        self._properties.append(attribute)
 
     def buildProperty(self, attributeName, callbackName=None, callbackarg=None):
         getter = self.buildGetter(attributeName)
@@ -101,35 +101,35 @@ class MetaBuilder(object):
         return self.createFunction(self, setter)
 
     def createFunction(self, klass, code):
-        dict = {}
+        method_dict = {}
         methodName = self.getSignatureString(code)
-        exec(code.strip(),globals(), dict)
-        setattr(klass,methodName, dict[methodName])
+        exec(code.strip(), globals(), method_dict)
+        setattr(klass, methodName, method_dict[methodName])
         return klass.__dict__[methodName]
 
     def getCallback(self, *args, **kwargs):
         for kwarg, validateArg in kwargs.iteritems():
             for callbackname, callback in self.callbacks.iteritems():
                 if callbackname == kwarg:
-                    return callback, validateArg
+                    return callback, self.processCallbackArg(validateArg)
         return None, None
 
     def processCallbackArg(self, callbackArg):
-        calltype=type(callbackArg).__name__
+        calltype = type(callbackArg).__name__
         _name = {'type': lambda arg: arg.__name__, 'instancemethod': lambda arg: "'{0}'".format(arg.__name__)}
         if calltype in _name.keys():
             return _name[calltype](callbackArg)
         return callbackArg
 
-    def getProperties(self):
-        return [string.replace(k, '_', '') for k in getAttributes(self) if k not in getMethods(self) + self.start]
+    def properties(self):
+        return self._properties
 
     def build(self):
         for required in self._required_args:
             isAttributeDefined(self, required)
         klass = get_class(self._model.__module__ + '.' + self._model.__name__)
         instance = klass()
-        for prop in self.getProperties():
+        for prop in self.properties():
             for method in [getattr(self, m) for m in getMethodsByName(self, prop)]:
                 if self.prefix in method.__name__:
                     setattr(instance, method.__name__ + '_' + prop, MethodType(unbind(method), self))
