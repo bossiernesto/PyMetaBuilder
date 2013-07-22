@@ -66,7 +66,7 @@ class MetaBuilder(object):
         self.property('age',type=int)
         """
         if self.isReserved(attribute):
-            raise MetaBuilderError("Attribute name {0} is a reserved word")
+            raise MetaBuilderError("Attribute name {0} is a reserved word".format(attribute))
         callback, callbackarg = self.getCallback(*args, **kwargs)
         if callback:
             callbackName = callback.__name__ + self._getAttrName(attribute)
