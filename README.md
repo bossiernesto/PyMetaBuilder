@@ -12,7 +12,7 @@ Metabuilder objective is to help to create Builders and instances or entities wi
 In order to create a new Builder just define a class extending from MetaBuilder class, and defining an stub class
 in any place you want. For eg.
 
-```
+```python
 from PyMetaBuilder import MetaBuilder
 
 #Stub Class to create instances from
@@ -25,7 +25,7 @@ class KiteBuilder(MetaBuilder.MetaBuilder):
 
 After that just initiate the superclass and start defining the properties you want KiteBuilder to have, for eg.
 
-```
+```python
 class KiteBuilder(MetaBuilder.MetaBuilder):
 
     def __init__(self):
@@ -44,7 +44,7 @@ You can also define a property as a mandatory one, with the required method. In 
 with the respecting properties and try to get a new instance, the framework will check if the properties that you
 previously set as mandatory were set.
 
-```
+```python
        def defineKite(self):
         #define the model klass to get instances from
         self.model(Kite)
@@ -58,7 +58,7 @@ previously set as mandatory were set.
 After you defined a builder and its properties, just set the parameters, if you want at this time and if they're not
 mandatory and build an instance.
 
-```
+```python
        kiteBuilder=KiteBuilder()
        kiteBuilder.design="Indoor"
        kiteBuilder.StringLength=23
