@@ -1,3 +1,15 @@
+"""
+.. module:: MetaBuilder Core
+   :platform: Linux
+   :synopsis: An small framework for creating builders or entities with validators. useful and introspective functions.
+   :copyright: (c) 2013 by Ernesto Bossi.
+   :license: GPL v3.
+
+.. moduleauthor:: Ernesto Bossi <bossi.ernestog@gmail.com>
+
+"""
+
+
 def getMethodsByName(p_object, name):
     return [method for method in getMethods(p_object) if name in method]
 
@@ -37,3 +49,7 @@ def createvarIfNotExists(obj, var, initial):
         getattr(obj, var)
     except AttributeError:
         setattr(obj, var, initial)
+
+
+def getMetaAttrName(propertyName):
+    return '_' + propertyName

@@ -1,17 +1,22 @@
-from types import MethodType, ModuleType
+"""
+.. module:: MetaBuilder Core
+   :platform: Linux
+   :synopsis: An small framework for creating builders or entities with validators. Core business module.
+   :copyright: (c) 2013 by Ernesto Bossi.
+   :license: GPL v3.
+
+.. moduleauthor:: Ernesto Bossi <bossi.ernestog@gmail.com>
+
+"""
+from types import MethodType
 from metaUtils import *
-
-
-def unbind(f):
-    self = getattr(f, '__self__', None)
-    if self is not None and not isinstance(self, ModuleType) and not isinstance(self, type):
-        if hasattr(f, '__func__'):
-            return f.__func__
-        return getattr(type(f.__self__), f.__name__)
-    raise TypeError('not a bound method')
+from MetaBuilderMutator import *
 
 
 class MetaBuilder(object):
+    """
+
+    """
 
     def __init__(self):
         self._prefix = 'validate_'
@@ -22,25 +27,76 @@ class MetaBuilder(object):
         self._properties = []
         self._required_args = []
         self._reserved = getAttributes(self) + ['_model']
+        self.mutator = MetaBuilderMutator()
 
     isReserved = lambda self, prop: prop in self._reserved
 
-    #Validators
+    #Validator methods
     def _get_Validators(self):
+        """
+        Method for getting the current validators of the module. Returns list with the validators names.
+        """
         return getMethodsByName(self, self._prefix)
 
     def _getValidatorsByName(self, name):
+        """
+        Method for getting the validators that matches a name or pattern given.
+
+        :param name: name of the pattern to filter
+        :type name: str
+        """
         return [getattr(self, val) for val in self._get_Validators() if name in val]
 
     def validate_type(self, value, expected_type):
+        """
+        validation of the type to a value to set. Raises TypeError when the type of value is not the one of
+        expected_value.
+
+        :param value: value to validate type
+        :param expected_type: Type to test with the type of the value given in the parameters
+        :type expected_type: type
+        :raises: TypeError
+        """
         if not type(value) in ([expected_type]):
             raise TypeError("Should be of type {0}".format(expected_type))
 
+    def validate_length(self, value, expected_length):
+        """
+        Validation of the length of a value to set. Raises ValidatorError if expected length is not equal to the actual
+        length of the value.
+
+        :param value: value to validate length
+        :param expected_length: expected length to validate
+        :type expected_length: int
+        :raises: ValidatorError
+        """
+        if not len(value) == expected_length:
+            raise ValidatorError("Length of {0} was not the expected one of {1}".format(value,expected_length))
+
     def validate_one_of(self, value, options):
+        """
+        Validation that checks that a value is one of the options given as parameter. Raises OptionValueError if the
+        value to set is not in the options list.
+
+        :param value: value to check
+        :param options: List of valid values that the value parameter should have.
+        :type options: List
+        :raises: OptionValueError
+        """
         if value not in options:
             raise OptionValueError("Value {0} not in expected options".format(value))
 
     def validate_validates(self, value, method):
+        """
+        Method to set a custom validator given by parameter that will check a value to set. Raises TypeError if there's
+        a problem calling the validator or TypeError if the method parameter is not callable.
+        Will raise a ValidatorError if the custom validation against the value fails.
+
+        :param value: value to set.
+        :param method: Custom validator to test
+        :type method: Method
+        :raises: TypeError,ValidatorError,TypeError
+        """
         methodCall = getattr(self, method)
         self.customMethodValidator(value, methodCall)
 
@@ -54,64 +110,50 @@ class MetaBuilder(object):
             raise ValidatorError('Problem calling method {0}'.format(method))
 
     def required(self, *args, **kwargs):
+        """
+        Method to set one or more attributes as required. This will ensure that when an instance of the builder is built
+        the framework will check that these required arguments have been previously set.
+
+        :param args: variable arguments to append to the required list.
+        """
         for arg in args:
             self._required_args.append(arg)
 
     def model(self, klass):
+        """
+        Method to set the class type to build.
+
+        :param klass: Class to build instances from it.
+        """
         createvarIfNotExists(self, "_model", klass)
         self._model = klass
 
     def property(self, attribute, *args, **kwargs):
         """
-        self.property('age',type=int)
+        Method to define a property for the instances to be created. Given an attribute name and variable validators or
+        properties, the framework will create a property for that name and will give it the properties given also as
+        parameter. These properties will be still valid in the instances created.
+
+        :param attribute: attribute name to be created.
+        :type attribute: str
+        :param kwargs: arguments of the validators and aspects that will be bind to the property
         """
         if self.isReserved(attribute):
             raise MetaBuilderError("Attribute name {0} is a reserved word".format(attribute))
         callback, callbackarg = self.getCallback(*args, **kwargs)
         if callback:
-            callbackName = callback.__name__ + self._getAttrName(attribute)
+            callbackName = callback.__name__ + getMetaAttrName(attribute)
             setattr(self, callbackName, MethodType(unbind(callback), self))
             #create setter and getters
-            self.buildProperty(attribute, callbackName, callbackarg)
+            self.mutator.buildProperty(self, attribute, callbackName, callbackarg)
         else:
-            self.buildProperty(attribute, None, None)
+            self.mutator.buildProperty(self, attribute, None, None)
         self._properties.append(attribute)
 
-    def buildProperty(self, attributeName, callbackName=None, callbackarg=None):
-        getter = self.buildGetter(attributeName)
-        setter = self.buildSetter(attributeName, callbackName, callbackarg)
-        self.setProperty(self, attributeName, getter, setter, None)
-
-    def setProperty(self, obj, attributeName, getter, setter, defaultValue=None):
-        setattr(obj.__class__, attributeName, property(fget=getter, fset=setter))
-        setattr(obj, self._getAttrName(attributeName), defaultValue)
-
-    def getSignatureString(self, methodString):
-        return methodString[methodString.find("def") + 3:methodString.find("(")].strip()
-
-    def _getAttrName(self, propertyName):
-        return '_' + propertyName
-
-    def buildGetter(self, propertyName):
-        getter = "def get{0}(self):\n" \
-                 "    return self.{1}".format(propertyName, self._getAttrName(propertyName))
-        return self.createFunction(self, getter)
-
-    def buildSetter(self, propertyName, callbackName=None, callbackarg=None):
-        callback = '' if callbackName is None else 'self.{0}(value,{1})'.format(callbackName, callbackarg)
-        setter = "def set{0}(self,value):\n" \
-                 "    {1}\n" \
-                 "    self.{2}=value".format(propertyName, callback.strip(), self._getAttrName(propertyName))
-        return self.createFunction(self, setter)
-
-    def createFunction(self, klass, code):
-        method_dict = {}
-        methodName = self.getSignatureString(code)
-        exec(code.strip(), globals(), method_dict)
-        setattr(klass, methodName, method_dict[methodName])
-        return klass.__dict__[methodName]
-
     def getCallback(self, *args, **kwargs):
+        """
+        Method to obtain all the callbacks given a list of variable arguments.
+        """
         for kwarg, validateArg in kwargs.iteritems():
             for callbackname, callback in self._callbacks.iteritems():
                 if callbackname == kwarg:
@@ -119,6 +161,11 @@ class MetaBuilder(object):
         return None, None
 
     def processCallbackArg(self, callbackArg):
+        """
+        Method to process the type of argument passed as a callback.
+
+        :param callbackArg: value that will be passed to a callback.
+        """
         calltype = type(callbackArg).__name__
         _name = {'type': lambda arg: arg.__name__, 'instancemethod': lambda arg: "'{0}'".format(arg.__name__)}
         if calltype in _name.keys():
@@ -126,9 +173,19 @@ class MetaBuilder(object):
         return callbackArg
 
     def properties(self):
+        """
+        Method to get the properties set so far. This list of properties will be the one assigned to the instance when
+        it's built.
+        """
         return self._properties
 
     def build(self):
+        """
+        Method to finally build an instance given the fact that some properties with or without validators have been
+        defined and set. Raises AttributeError if an propertied defined as required has not been set properly.
+
+        :raises: AttributeError
+        """
         for required in self._required_args:
             isAttributeDefined(self, required)
         klass = get_class(self._model.__module__ + '.' + self._model.__name__)
@@ -136,12 +193,12 @@ class MetaBuilder(object):
         for prop in self.properties():
             for method in [getattr(self, m) for m in getMethodsByName(self, prop)]:
                 if self._prefix in method.__name__:
-                    setattr(instance, method.__name__ + self._getAttrName(prop), MethodType(unbind(method), self))
+                    setattr(instance, method.__name__ + getMetaAttrName(prop), MethodType(unbind(method), self))
                 else:
                     setattr(instance, method.__name__, getattr(self, method.__name__))
             getter = getattr(instance, 'get{0}'.format(prop))
             setter = getattr(instance, 'set{0}'.format(prop))
-            self.setProperty(instance, prop, getter, setter, getattr(self, self._getAttrName(prop)))
+            self.mutator.setProperty(instance, prop, getter, setter, getattr(self, getMetaAttrName(prop)))
         return instance
 
 

@@ -1,3 +1,13 @@
+"""
+.. module:: MetaBuilder Core
+   :platform: Linux
+   :synopsis: An small framework for creating builders or entities with validators. Test Case for version >= 0.1.
+   :copyright: (c) 2013 by Ernesto Bossi.
+   :license: GPL v3.
+
+.. moduleauthor:: Ernesto Bossi <bossi.ernestog@gmail.com>
+
+"""
 from unittest import TestCase
 from PyMetaBuilder import MetaBuilder
 
