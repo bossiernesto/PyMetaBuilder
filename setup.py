@@ -1,17 +1,18 @@
 from distutils.core import setup
 
-with open('README.rst') as readme:
+with open('README.txt') as readme:
     long_description = readme.read()
 
-setup(name="PyMetaBuilder",
+setup(name="PyMetabuilder",
       version="0.2.0",
       description="Small framework for creating Builders and entities",
       long_description=long_description,
       author="Ernesto Bossi",
       author_email="bossi.ernestog@gmail.com",
-      url="https://github.com/bossiernesto/PyMetaBuilder",
+      url="https://github.com/bossiernesto/PyMetabuilder",
       license="GPL v3",
-      py_modules=["PyMetaBuilder"],
+      packages=['PyMetabuilder'],
+      package_dir={'PyMetabuilder': 'PyMetabuilder'},
       keywords="MetaBuilder Metaprogramming",
       classifiers=["Development Status :: 3 - Alpha",
                    "Topic :: Utilities",

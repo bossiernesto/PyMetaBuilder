@@ -1,5 +1,5 @@
 """
-.. module:: MetaBuilder Core
+.. module:: MetaBuilder Credit Card Test
    :platform: Linux
    :synopsis: An small framework for creating builders or entities with validators. Test for version version >=0.15.
    :copyright: (c) 2013 by Ernesto Bossi.
@@ -8,8 +8,8 @@
 .. moduleauthor:: Ernesto Bossi <bossi.ernestog@gmail.com>
 
 """
-from PyMetaBuilder.MetaBuilder import MetaBuilder
-from unittest import TestCase, skip
+from unittest import TestCase
+from PyMetabuilder import MetaBuilder
 
 
 class Logo:
@@ -20,27 +20,22 @@ class CreditCard:
     pass
 
 
-class CreditCardMetaBuilder(MetaBuilder):
+class CreditCardMetaBuilder(MetaBuilder.MetaBuilder):
 
     def __init__(self):
-        MetaBuilder.__init__(self)
+        MetaBuilder.MetaBuilder.__init__(self)
         self.model(CreditCard)
-        self.property("ccnumber", type=int, required=True, lenght=16)
+        self.property("ccnumber", type=long, required=True, lenght=16)
         self.property("ccName", type=str, required=True)
         self.property("extraLogo", type=Logo)
 
 
-class TestCreditCardMetabuilder(TestCase):
+class TestCreditCardMetaBuilder(TestCase):
 
     def setUp(self):
         self.cardBuilder = CreditCardMetaBuilder()
 
-    def testa(self):
-        self.cardBuilder.property("ccnumber", type=int, required=True, lenght=16)
-
     def testBuild(self):
-        self.cardBuilder.ccnumber = "4304222233334444"
+        self.cardBuilder.ccnumber = 4304222233334444
         self.cardBuilder.ccName = "Jhon Doe"
         self.cardBuilder.build()
-
-

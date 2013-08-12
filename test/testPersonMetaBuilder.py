@@ -1,5 +1,5 @@
 """
-.. module:: MetaBuilder Core
+.. module:: MetaBuilder Persona Test
    :platform: Linux
    :synopsis: An small framework for creating builders or entities with validators. Test Case for version >= 0.1.
    :copyright: (c) 2013 by Ernesto Bossi.
@@ -9,7 +9,7 @@
 
 """
 from unittest import TestCase
-from PyMetaBuilder import MetaBuilder
+from PyMetabuilder import MetaBuilder
 
 
 class Person(object):
