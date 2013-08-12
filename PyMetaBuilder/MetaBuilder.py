@@ -11,7 +11,7 @@
 from types import MethodType
 from metaUtils import *
 from MetaBuilderMutator import *
-
+from MetaBuilderCallbacks import *
 
 class MetaBuilder(object):
     """
@@ -137,6 +137,7 @@ class MetaBuilder(object):
         :param attribute: attribute name to be created.
         :type attribute: str
         :param kwargs: arguments of the validators and aspects that will be bind to the property
+        :raises: MetaBuilderError
         """
         if self.isReserved(attribute):
             raise MetaBuilderError("Attribute name {0} is a reserved word".format(attribute))
@@ -157,20 +158,9 @@ class MetaBuilder(object):
         for kwarg, validateArg in kwargs.iteritems():
             for callbackname, callback in self._callbacks.iteritems():
                 if callbackname == kwarg:
+                    callbacks=MetaBuilderCallback(attribute,callback,validateArg)
                     return callback, self.processCallbackArg(validateArg)
         return None, None
-
-    def processCallbackArg(self, callbackArg):
-        """
-        Method to process the type of argument passed as a callback.
-
-        :param callbackArg: value that will be passed to a callback.
-        """
-        calltype = type(callbackArg).__name__
-        _name = {'type': lambda arg: arg.__name__, 'instancemethod': lambda arg: "'{0}'".format(arg.__name__)}
-        if calltype in _name.keys():
-            return _name[calltype](callbackArg)
-        return callbackArg
 
     def properties(self):
         """

@@ -61,7 +61,6 @@ class MetaBuilderMutator(object):
         setattr(obj.__class__, attributeName, property(fget=getter, fset=setter))
         setattr(obj, getMetaAttrName(attributeName), defaultValue)
 
-
     def buildGetter(self, instance, propertyName):
         """
         Method that given an instance and a propertyName, builds a getter dynamically and associate this propertyName

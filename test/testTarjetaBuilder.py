@@ -1,7 +1,7 @@
 """
 .. module:: MetaBuilder Core
    :platform: Linux
-   :synopsis: An small framework for creating builders or entities with validators. Test for version version >=0.14.
+   :synopsis: An small framework for creating builders or entities with validators. Test for version version >=0.15.
    :copyright: (c) 2013 by Ernesto Bossi.
    :license: GPL v3.
 
