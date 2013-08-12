@@ -25,7 +25,7 @@ class CreditCardMetaBuilder(MetaBuilder.MetaBuilder):
     def __init__(self):
         MetaBuilder.MetaBuilder.__init__(self)
         self.model(CreditCard)
-        self.property("ccnumber", type=long, required=True, lenght=16)
+        self.property("ccnumber", type=str, length=16, required=True)
         self.property("ccName", type=str, required=True)
         self.property("extraLogo", type=Logo)
 
@@ -36,6 +36,6 @@ class TestCreditCardMetaBuilder(TestCase):
         self.cardBuilder = CreditCardMetaBuilder()
 
     def testBuild(self):
-        self.cardBuilder.ccnumber = 4304222233334444
+        self.cardBuilder.ccnumber = "4304222233334444"
         self.cardBuilder.ccName = "Jhon Doe"
         self.cardBuilder.build()
