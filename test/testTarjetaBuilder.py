@@ -34,8 +34,6 @@ class TestCreditCardMetaBuilder(TestCase):
 
     def setUp(self):
         self.cardBuilder = CreditCardMetaBuilder()
-        self.cardBuilder.ccnumber = "4304222233334444"
-        self.cardBuilder.ccName = "John Doe"
 
     def testBuild(self):
         creditcard = self.cardBuilder.build()
