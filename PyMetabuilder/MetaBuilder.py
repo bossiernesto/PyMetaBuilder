@@ -119,6 +119,10 @@ class MetaBuilder(object):
         for arg in args:
             self._required_args.append(arg)
 
+    def modelByName(self,className):
+        self.klass = type(className, (), {})
+        self.model(self.klass)
+
     def model(self, klass):
         """
         Method to set the class type to build.
