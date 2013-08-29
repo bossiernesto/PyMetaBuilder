@@ -13,9 +13,10 @@ from PyMetabuilder.metaUtils import *
 from PyMetabuilder.MetaBuilderMutator import *
 from PyMetabuilder.MetaBuilderCallbacks import *
 
+
 class MetaBuilder(object):
     """
-
+    This is the base class that should inherit any builder the user wants to code to get instances via validations
     """
 
     def __init__(self):
@@ -171,8 +172,12 @@ class MetaBuilder(object):
         """
         for required in self._required_args:
             isAttributeDefined(self, required)
-        klass = get_class(self._model.__module__ + '.' + self._model.__name__)
-        instance = klass()
+        try:
+            klass = get_class(self._model.__module__ + '.' + self._model.__name__)
+            instance = klass()
+        except AttributeError:
+            #if fails then class has been generated dinamically in this module
+            instance = self._model()
         for prop in self.properties():
             for method in [getattr(self, m) for m in getMethodsByName(self, prop)]:
                 if self._prefix in method.__name__:
@@ -185,13 +190,13 @@ class MetaBuilder(object):
         return instance
 
 
-class OptionValueError(Exception):
+class OptionValueError(StandardError):
     pass
 
 
-class ValidatorError(Exception):
+class ValidatorError(StandardError):
     pass
 
 
-class MetaBuilderError(Exception):
+class MetaBuilderError(StandardError):
     pass

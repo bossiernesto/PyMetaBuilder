@@ -29,6 +29,20 @@ class TestKiteMetaBuilder(TestCase):
     def setUp(self):
         self.kiteBuilder = KiteBuilder()
         self.kiteBuilder.design = "Indoor"
+        self.kite =self.getKiteInstance()
 
-    def testBuild(self):
-        self.assertEqual(self.kiteBuilder.KITE,self.kiteBuilder.build().__class__)
+    def getKiteInstance(self):
+        return self.kiteBuilder.build()
+
+    def testClass(self):
+        self.assertEqual(self.kiteBuilder.KITE,self.getKiteInstance().__class__.__name__)
+
+    def testAttributes(self):
+        self.assertEqual('Indoor',self.kite.design)
+
+    def testSetAttribute(self):
+        self.kite.line_material='Linen'
+        self.assertEqual('Linen',self.kite.line_material)
+
+    def testInvalidSetAttribute(self):
+        self.assertRaises(TypeError,self.kite.line_material,2)

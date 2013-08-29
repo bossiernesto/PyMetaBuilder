@@ -35,9 +35,17 @@ class TestCreditCardMetaBuilder(TestCase):
     def setUp(self):
         self.cardBuilder = CreditCardMetaBuilder()
 
-    def testBuild(self):
+    def CCBuild(self):
         creditcard = self.cardBuilder.build()
 
-    def testExceptionBuild(self):
-        self.cardBuilder.ccnumber = "43042222333344"
+    def testNormalBuild(self):
+        self.cardBuilder.ccnumber = "5430422223333444"
+        self.cardBuilder.ccName = 'John Doe'
         self.cardBuilder.build()
+
+    def testAttrErrorBuild(self):
+        self.cardBuilder.ccnumber = "5430422223333444"
+        self.assertRaises(AttributeError,self.cardBuilder.build)
+
+    def testInvalidLengthBuild(self):
+        self.assertRaises(MetaBuilder.ValidatorError,self.cardBuilder.ccnumber,"543042222333444")
