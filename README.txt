@@ -28,6 +28,8 @@ eg.
     class KiteBuilder(MetaBuilder.MetaBuilder):
         pass
 
+.. note:: from version 0.2.1 onwards you can define the class model with the method modelByName. For ex. calling modelByName('Kite') instead of model(Kite)
+
 After that just initiate the superclass and start defining the
 properties you want KiteBuilder to have, for eg.
 
