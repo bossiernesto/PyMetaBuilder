@@ -28,7 +28,7 @@ eg.
     class KiteBuilder(MetaBuilder.MetaBuilder):
         pass
 
-.. note:: from version 0.2.1 onwards you can define the class model with the method modelByName. For ex. calling modelByName('Kite') instead of model(Kite)
+.. note:: from version 0.2.1 onwards you can define the class model with the method model_by_name, thus you don't have to define a stub class in your code. For ex. calling model_by_name('Kite') instead of model(Kite)
 
 After that just initiate the superclass and start defining the
 properties you want KiteBuilder to have, for eg.

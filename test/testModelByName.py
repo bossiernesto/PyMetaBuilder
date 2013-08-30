@@ -18,7 +18,7 @@ class KiteBuilder(MetaBuilder.MetaBuilder):
 
     def __init__(self):
         MetaBuilder.MetaBuilder.__init__(self)
-        self.modelByName(self.KITE)
+        self.model_by_name(self.KITE)
         self.property("design", one_of=["Indoor", "Water Kite", "Kythoon"])
         self.property("line_material", type=str)
         self.property("StringLength", type=int)
@@ -29,20 +29,20 @@ class TestKiteMetaBuilder(TestCase):
     def setUp(self):
         self.kiteBuilder = KiteBuilder()
         self.kiteBuilder.design = "Indoor"
-        self.kite =self.getKiteInstance()
+        self.kite =self.get_kite_instance()
 
-    def getKiteInstance(self):
+    def get_kite_instance(self):
         return self.kiteBuilder.build()
 
-    def testClass(self):
-        self.assertEqual(self.kiteBuilder.KITE,self.getKiteInstance().__class__.__name__)
+    def test_class(self):
+        self.assertEqual(self.kiteBuilder.KITE,self.get_kite_instance().__class__.__name__)
 
-    def testAttributes(self):
+    def test_attributes(self):
         self.assertEqual('Indoor',self.kite.design)
 
-    def testSetAttribute(self):
+    def test_set_attribute(self):
         self.kite.line_material='Linen'
         self.assertEqual('Linen',self.kite.line_material)
 
-    def testInvalidSetAttribute(self):
+    def test_invalid_set_attribute(self):
         self.assertRaises(TypeError,self.kite.line_material,2)

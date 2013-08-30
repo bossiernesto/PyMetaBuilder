@@ -4,7 +4,7 @@ with open('README.txt') as readme:
     long_description = readme.read()
 
 setup(name="PyMetabuilder",
-      version="0.2.1",
+      version="0.2.2",
       description="Small framework for creating Builders and entities",
       long_description=long_description,
       author="Ernesto Bossi",

@@ -99,9 +99,9 @@ class MetaBuilder(object):
         :raises: TypeError,ValidatorError,TypeError
         """
         methodCall = getattr(self, method)
-        self.customMethodValidator(value, methodCall)
+        self.custom_method_validator(value, methodCall)
 
-    def customMethodValidator(self, value, method):
+    def custom_method_validator(self, value, method):
         if not callable(method):
             raise TypeError("{0} is not a method or callable one".format(method))
         try:
@@ -120,7 +120,7 @@ class MetaBuilder(object):
         for arg in args:
             self._required_args.append(arg)
 
-    def modelByName(self,className):
+    def model_by_name(self,className):
         self.klass = type(className, (), {})
         self.model(self.klass)
 
@@ -130,7 +130,7 @@ class MetaBuilder(object):
 
         :param klass: Class to build instances from it.
         """
-        createvarIfNotExists(self, "_model", klass)
+        createvar_if_not_exists(self, "_model", klass)
         self._model = klass
 
     def property(self, attribute, *args, **kwargs):
@@ -146,14 +146,14 @@ class MetaBuilder(object):
         """
         if self.isReserved(attribute):
             raise MetaBuilderError("Attribute name {0} is a reserved word".format(attribute))
-        callbacks = MetaBuilderCallbackGenerator.processCallbacks(attribute, self, *args, **kwargs)
-        if len(callbacks) > 0:
-            for callback in callbacks:
-                setattr(self, callback.callbackName, MethodType(unbind(callback.callback), self))
+        validators = GeneratorOfValidations.process_validators(attribute, self, *args, **kwargs)
+        if len(validators) > 0:
+            for validator in validators:
+                setattr(self, validator.validatorName, MethodType(unbind(validator.validator), self))
             #create setter and getters
-            self.mutator.buildProperty(self, attribute, callbacks)
+            self.mutator.build_property(self, attribute, validators)
         else:
-            self.mutator.buildProperty(self, attribute, None)
+            self.mutator.build_property(self, attribute, None)
         self._properties.append(attribute)
 
     def properties(self):
@@ -171,7 +171,7 @@ class MetaBuilder(object):
         :raises: AttributeError
         """
         for required in self._required_args:
-            isAttributeDefined(self, required)
+            is_attribute_defined(self, required)
         try:
             klass = get_class(self._model.__module__ + '.' + self._model.__name__)
             instance = klass()
@@ -181,12 +181,12 @@ class MetaBuilder(object):
         for prop in self.properties():
             for method in [getattr(self, m) for m in getMethodsByName(self, prop)]:
                 if self._prefix in method.__name__:
-                    setattr(instance, method.__name__ + getMetaAttrName(prop), MethodType(unbind(method), self))
+                    setattr(instance, method.__name__ + getMeta_attr_name(prop), MethodType(unbind(method), self))
                 else:
                     setattr(instance, method.__name__, getattr(self, method.__name__))
             getter = getattr(instance, 'get{0}'.format(prop))
             setter = getattr(instance, 'set{0}'.format(prop))
-            self.mutator.setProperty(instance, prop, getter, setter, getattr(self, getMetaAttrName(prop)))
+            self.mutator.set_property(instance, prop, getter, setter, getattr(self, getMeta_attr_name(prop)))
         return instance
 
 

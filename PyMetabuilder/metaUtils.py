@@ -34,7 +34,7 @@ def getMethods(obj):
     return ret
 
 
-def isAttributeDefined(obj, attribute):
+def is_attribute_defined(obj, attribute):
     if hasattr(obj, attribute) and getattr(obj, attribute) is not None:
         return
     raise AttributeError('Attribute {0} is not defined'.format(attribute))
@@ -44,12 +44,12 @@ def getAttributes(obj):
     return [prop for (prop, value) in vars(obj).iteritems()]
 
 
-def createvarIfNotExists(obj, var, initial):
+def createvar_if_not_exists(obj, var, initial):
     try:
         getattr(obj, var)
     except AttributeError:
         setattr(obj, var, initial)
 
 
-def getMetaAttrName(propertyName):
+def getMeta_attr_name(propertyName):
     return '_' + propertyName

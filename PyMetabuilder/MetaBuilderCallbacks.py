@@ -1,5 +1,5 @@
 """
-.. module:: MetaBuilder Callbacks
+.. module:: MetaBuilder Validator Module
    :platform: Linux
    :synopsis: An small framework for creating builders or entities with validators. Module for processing callbacks.
    :copyright: (c) 2013 by Ernesto Bossi.
@@ -8,44 +8,44 @@
 .. moduleauthor:: Ernesto Bossi <bossi.ernestog@gmail.com>
 
 """
-from PyMetabuilder.metaUtils import getMetaAttrName
+from PyMetabuilder.metaUtils import getMeta_attr_name
 
 
-class MetaBuilderCallbackGenerator(object):
+class GeneratorOfValidations(object):
 
     @staticmethod
-    def processCallbacks(attribute, builder, *args, **kwargs):
+    def process_validators(attribute, builder, *args, **kwargs):
         """
-        Method to obtain all the callbacks and callables given a list of variable arguments.
+        Method to obtain all the validators and callables given a list of variable arguments.
         """
-        callbacks = []
+        validators = []
         for kwarg, validateArg in kwargs.iteritems():
             for callbackName, callback in builder._callbacks.iteritems():
                 if callbackName == kwarg:
-                    callbacks.append(MetaBuilderCallback(attribute, callback, validateArg))
+                    validators.append(MetaBuilderValidator(attribute, callback, validateArg))
             if hasattr(builder, kwarg):
                 getattr(builder, kwarg)(attribute)
-        return callbacks
+        return validators
 
 
-class MetaBuilderCallback(object):
+class MetaBuilderValidator(object):
 
-    def __init__(self, attribute, callback, validateArg=None):
-        self.callback = callback
-        self.callbackArguments = self.processCallbackArg(validateArg)
-        self.callbackName = callback.__name__ + getMetaAttrName(attribute)
+    def __init__(self, attribute, validator, validateArg=None):
+        self.validator = validator
+        self.validatorArguments = self.process_validator_arg(validateArg)
+        self.validatorName = validator.__name__ + getMeta_attr_name(attribute)
 
-    def processCallbackArg(self, callbackArg):
+    def process_validator_arg(self, validatorArg):
         """
         Method to process the type of argument passed as a callback.
 
-        :param callbackArg: value that will be passed to a callback.
+        :param validatorArg: value that will be passed to a callback.
         """
-        calltype = type(callbackArg).__name__
+        calltype = type(validatorArg).__name__
         _name = {'type': lambda arg: arg.__name__, 'instancemethod': lambda arg: "'{0}'".format(arg.__name__)}
         if calltype in _name.keys():
-            return _name[calltype](callbackArg)
-        return callbackArg
+            return _name[calltype](validatorArg)
+        return validatorArg
 
-    def generateValidator(self):
-        return 'self.{0}(value,{1})'.format(self.callbackName, self.callbackArguments)
+    def generate_validator(self):
+        return 'self.{0}(value,{1})'.format(self.validatorName, self.validatorArguments)

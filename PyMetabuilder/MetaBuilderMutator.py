@@ -9,8 +9,7 @@
 
 """
 from types import ModuleType
-
-from PyMetabuilder.metaUtils import getMetaAttrName
+from PyMetabuilder.metaUtils import getMeta_attr_name
 
 
 def unbind(f):
@@ -35,13 +34,13 @@ class MetaBuilderMutator(object):
 
     """
 
-    def getSignatureString(self, methodString):
+    def get_signature_string(self, methodString):
         """
 
         """
         return methodString[methodString.find("def") + 3:methodString.find("(")].strip()
 
-    def buildProperty(self, instance, attributeName, callbacks=None):
+    def build_property(self, instance, attributeName, callbacks=None):
         """
         Method that given an instance and an attributeName will generate the property getter and setter for that
         attribute and associate to the instance.
@@ -51,18 +50,18 @@ class MetaBuilderMutator(object):
         :param attributeName: then name of the attribute that will be associated the property methods for the instance
         :type attributeName: str
         """
-        getter = self.buildGetter(instance, attributeName)
-        setter = self.buildSetter(instance, attributeName, callbacks)
-        self.setProperty(instance, attributeName, getter, setter, None)
+        getter = self.build_getter(instance, attributeName)
+        setter = self.build_setter(instance, attributeName, callbacks)
+        self.set_property(instance, attributeName, getter, setter, None)
 
-    def setProperty(self, obj, attributeName, getter, setter, defaultValue=None):
+    def set_property(self, obj, attributeName, getter, setter, defaultValue=None):
         """
 
         """
         setattr(obj.__class__, attributeName, property(fget=getter, fset=setter))
-        setattr(obj, getMetaAttrName(attributeName), defaultValue)
+        setattr(obj, getMeta_attr_name(attributeName), defaultValue)
 
-    def buildGetter(self, instance, propertyName):
+    def build_getter(self, instance, propertyName):
         """
         Method that given an instance and a propertyName, builds a getter dynamically and associate this propertyName
         to the instance.
@@ -73,10 +72,10 @@ class MetaBuilderMutator(object):
         :type propertyName: str
         """
         getter = "def get{0}(self):\n" \
-                 "    return self.{1}".format(propertyName, getMetaAttrName(propertyName))
-        return self.createFunction(instance, getter)
+                 "    return self.{1}".format(propertyName, getMeta_attr_name(propertyName))
+        return self.create_function(instance, getter)
 
-    def buildSetter(self, instance, propertyName, callbacks=None):
+    def build_setter(self, instance, propertyName, callbacks=None):
         """
         Method that given an instance and a propertyName, builds a setter dynamically and associate this propertyName
         to the instance. Will append validators if any callback passed
@@ -86,13 +85,13 @@ class MetaBuilderMutator(object):
         :param propertyName: The property that the getter will return on calling
         :type propertyName: str
         """
-        callback = '' if callbacks is None else '\n'.join('\t'+callback.generateValidator().strip() for callback in callbacks)
+        callback = '' if callbacks is None else '\n'.join('\t'+callback.generate_validator().strip() for callback in callbacks)
         setter = "def set{0}(self,value):\n" \
                  "{1}\n" \
-                 "\tself.{2}=value".format(propertyName, callback, getMetaAttrName(propertyName))
-        return self.createFunction(instance, setter)
+                 "\tself.{2}=value".format(propertyName, callback, getMeta_attr_name(propertyName))
+        return self.create_function(instance, setter)
 
-    def createFunction(self, instance, code):
+    def create_function(self, instance, code):
         """
         Method to create a function/method given a code in python and set it to a given instance.
 
@@ -102,7 +101,7 @@ class MetaBuilderMutator(object):
         :type code: str
         """
         method_dict = {}
-        methodName = self.getSignatureString(code)
+        methodName = self.get_signature_string(code)
         exec(code.strip(), globals(), method_dict)
         setattr(instance, methodName, method_dict[methodName])
         return instance.__dict__[methodName]
