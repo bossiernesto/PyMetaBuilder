@@ -179,14 +179,7 @@ class MetaBuilder(object):
             #if fails then class has been generated dinamically in this module
             instance = self._model()
         for prop in self.properties():
-            for method in [getattr(self, m) for m in getMethodsByName(self, prop)]:
-                if self._prefix in method.__name__:
-                    setattr(instance, method.__name__ + getMeta_attr_name(prop), MethodType(unbind(method), self))
-                else:
-                    setattr(instance, method.__name__, getattr(self, method.__name__))
-            getter = getattr(instance, 'get{0}'.format(prop))
-            setter = getattr(instance, 'set{0}'.format(prop))
-            self.mutator.set_property(instance, prop, getter, setter, getattr(self, getMeta_attr_name(prop)))
+            self.mutator.migrate_attribute(prop,self,instance)
         return instance
 
 

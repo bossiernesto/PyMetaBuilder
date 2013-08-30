@@ -8,9 +8,8 @@
 .. moduleauthor:: Ernesto Bossi <bossi.ernestog@gmail.com>
 
 """
-from types import ModuleType
-from PyMetabuilder.metaUtils import getMeta_attr_name
-
+from types import ModuleType, MethodType
+from PyMetabuilder.metaUtils import getMeta_attr_name,getMethodsByName
 
 def unbind(f):
     """
@@ -105,3 +104,24 @@ class MetaBuilderMutator(object):
         exec(code.strip(), globals(), method_dict)
         setattr(instance, methodName, method_dict[methodName])
         return instance.__dict__[methodName]
+
+    def migrate_attribute(self, property, metabuilder, instance):
+        """
+        Method migrate an attribute from the metabuilder instance to the instance created by itself.
+
+        :param property: object to set the code given in the parameters of this method
+        :type property: <type 'property'>
+        :param metabuilder: instance of a metabuilder where to extract the methods and validators of the attribute to
+        migrate
+        :type metabuilder: <type 'Metabuilder'>
+        :param instance: instance created that will hold the property and the validators
+        :type instance: <type 'instance'>
+        """
+        for method in [getattr(metabuilder, m) for m in getMethodsByName(metabuilder, property)]:
+            if metabuilder._prefix in method.__name__:
+                setattr(instance, method.__name__ + getMeta_attr_name(property), MethodType(unbind(method), metabuilder))
+            else:
+                setattr(instance, method.__name__, getattr(metabuilder, method.__name__))
+        getter = getattr(instance, 'get{0}'.format(property))
+        setter = getattr(instance, 'set{0}'.format(property))
+        self.set_property(instance, property, getter, setter, getattr(metabuilder, getMeta_attr_name(property)))
