@@ -120,8 +120,8 @@ class MetaBuilder(object):
         for arg in args:
             self._required_args.append(arg)
 
-    def model_by_name(self,className):
-        self.klass = type(className, (), {})
+    def model_by_name(self, className):
+        self.klass = type(className.title(), (), {})
         self.model(self.klass)
 
     def model(self, klass):
