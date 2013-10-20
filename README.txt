@@ -41,7 +41,7 @@ properties you want KiteBuilder to have, for eg.
             MetaBuilder.MetaBuilder.__init__(self)
             self.defineKite()
 
-        def defineKite(self):
+        def define_kite(self):
             #define the model klass to get instances from
             self.model(Kite)
             self.property("design",one_of=["Indoor","Water Kite","Kythoon"])
@@ -55,7 +55,7 @@ the properties that you previously set as mandatory were set.
 
 ::
 
-           def defineKite(self):
+           def define_kite(self):
             #define the model klass to get instances from
             self.model(Kite)
             self.property("StringLength",type=int)

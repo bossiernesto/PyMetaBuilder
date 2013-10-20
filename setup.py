@@ -14,7 +14,7 @@ setup(name="PyMetabuilder",
       packages=['PyMetabuilder'],
       package_dir={'PyMetabuilder': 'PyMetabuilder'},
       keywords="MetaBuilder Metaprogramming",
-      classifiers=["Development Status :: 3 - Alpha",
+      classifiers=["Development Status :: 4 - Beta",
                    "Topic :: Utilities",
                    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)"]
 )
