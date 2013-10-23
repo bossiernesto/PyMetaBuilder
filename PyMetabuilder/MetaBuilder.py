@@ -58,8 +58,9 @@ class MetaBuilder(object):
         :type expected_type: type
         :raises: TypeError
         """
-        if not type(value) in ([expected_type]):
-            raise TypeError("Should be of type {0}".format(expected_type))
+        expected_types = expected_type if isinstance(expected_type, list) else [expected_type]
+        if not type(value) in expected_types:
+            raise TypeError("{0} Should be of type {1}".format(value, expected_type))
 
     def validate_length(self, value, expected_length):
         """
@@ -72,7 +73,7 @@ class MetaBuilder(object):
         :raises: ValidatorError
         """
         if not len(value) == expected_length:
-            raise ValidatorError("Length of {0} was not the expected one of {1}".format(value,expected_length))
+            raise ValidatorError("Length of {0} was not the expected one of {1}".format(value, expected_length))
 
     def validate_one_of(self, value, options):
         """
@@ -150,7 +151,7 @@ class MetaBuilder(object):
         if len(validators) > 0:
             for validator in validators:
                 setattr(self, validator.validatorName, MethodType(unbind(validator.validator), self))
-            #create setter and getters
+                #create setter and getters
             self.mutator.build_property(self, attribute, validators)
         else:
             self.mutator.build_property(self, attribute, None)
@@ -179,7 +180,7 @@ class MetaBuilder(object):
             #if fails then class has been generated dinamically in this module
             instance = self._model()
         for prop in self.properties():
-            self.mutator.migrate_attribute(prop,self,instance)
+            self.mutator.migrate_attribute(prop, self, instance)
         return instance
 
 
