@@ -1,0 +1,144 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Pymetabuilder by bossiernesto</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/main.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+
+      <header>
+        <h1>Pymetabuilder</h1>
+        <p>metabuilder</p>
+      </header>
+
+      <div id="banner">
+        <span id="logo"></span>
+
+        <a href="https://github.com/bossiernesto/PyMetaBuilder" class="button fork"><strong>View On GitHub</strong></a>
+        <div class="downloads">
+          <span>Downloads:</span>
+          <ul>
+            <li><a href="https://github.com/bossiernesto/PyMetaBuilder/zipball/master" class="button">ZIP</a></li>
+            <li><a href="https://github.com/bossiernesto/PyMetaBuilder/tarball/master" class="button">TAR</a></li>
+          </ul>
+        </div>
+      </div><!-- end banner -->
+
+    <div class="wrapper">
+      <nav>
+        <ul></ul>
+      </nav>
+      <section>
+        <h1>
+<a name="pymetabuilder" class="anchor" href="#pymetabuilder"><span class="octicon octicon-link"></span></a>PyMetaBuilder</h1>
+
+<h2>
+<a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>Introduction</h2>
+
+<p>Small framework to create entities and Builders with Metaprogramming features in Python.
+This project is based on the Ruby implementation made by <a href="https://www.github.com/dlitvakb">dlitvakb</a> <a href="https://github.com/dlitvakb/MetaBuilder">MetaBuilder</a></p>
+
+<h2>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>to install pymetabuilder to it's last stable release, just do:</p>
+
+<pre><code>$ pip install PyMetabuilder
+</code></pre>
+
+<p>if you want to download another version or the tarball of the last build, go to: <a href="https://pypi.python.org/pypi/PyMetabuilder">https://pypi.python.org/pypi/PyMetabuilder</a></p>
+
+<h2>
+<a name="creating-builders" class="anchor" href="#creating-builders"><span class="octicon octicon-link"></span></a>Creating Builders</h2>
+
+<p>Metabuilder objective is to help to create Builders and instances or entities with validations easy and fast.</p>
+
+<p>In order to create a new Builder just define a class extending from MetaBuilder class, and defining an stub class
+in any place you want. For eg.</p>
+
+<div class="highlight highlight-python"><pre><span class="kn">from</span> <span class="nn">PyMetaBuilder</span> <span class="kn">import</span> <span class="n">MetaBuilder</span>
+
+<span class="c">#Stub Class to create instances from</span>
+<span class="k">class</span> <span class="nc">Kite</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="k">class</span> <span class="nc">KiteBuilder</span><span class="p">(</span><span class="n">MetaBuilder</span><span class="o">.</span><span class="n">MetaBuilder</span><span class="p">):</span>
+    <span class="k">pass</span>
+</pre></div>
+
+<blockquote>
+<p><strong>note</strong></p>
+
+<p>from version 0.2.1 onwards you can define the class model with the
+method model_by_name, thus you don't have to define a stub class in your code.
+For ex. calling model_by_name('Kite') instead of model(Kite)</p>
+</blockquote>
+
+<p>After that just initiate the superclass and start defining the properties you want KiteBuilder to have, for eg.</p>
+
+<div class="highlight highlight-python"><pre><span class="k">class</span> <span class="nc">KiteBuilder</span><span class="p">(</span><span class="n">MetaBuilder</span><span class="o">.</span><span class="n">MetaBuilder</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">MetaBuilder</span><span class="o">.</span><span class="n">MetaBuilder</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">defineKite</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">define_kite</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c">#define the model klass to get instances from</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">Kite</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="p">(</span><span class="s">"design"</span><span class="p">,</span><span class="n">one_of</span><span class="o">=</span><span class="p">[</span><span class="s">"Indoor"</span><span class="p">,</span><span class="s">"Water Kite"</span><span class="p">,</span><span class="s">"Kythoon"</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="p">(</span><span class="s">"line_material"</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="p">(</span><span class="s">"StringLength"</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+</pre></div>
+
+<p>You can also define a property as a mandatory one, with the required method. In this way, when you set the builder
+with the respecting properties and try to get a new instance, the framework will check if the properties that you
+previously set as mandatory were set.</p>
+
+<div class="highlight highlight-python"><pre>       <span class="k">def</span> <span class="nf">define_kite</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c">#define the model klass to get instances from</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">Kite</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="p">(</span><span class="s">"StringLength"</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+        <span class="c">#code defining properties....</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">required</span><span class="p">(</span><span class="s">"design"</span><span class="p">)</span>
+</pre></div>
+
+<h2>
+<a name="creating-instances-from-a-builder" class="anchor" href="#creating-instances-from-a-builder"><span class="octicon octicon-link"></span></a>Creating instances from a Builder</h2>
+
+<p>After you defined a builder and its properties, just set the parameters, if you want at this time and if they're not
+mandatory and build an instance.</p>
+
+<div class="highlight highlight-python"><pre>       <span class="n">kiteBuilder</span><span class="o">=</span><span class="n">KiteBuilder</span><span class="p">()</span>
+       <span class="n">kiteBuilder</span><span class="o">.</span><span class="n">design</span><span class="o">=</span><span class="s">"Indoor"</span>
+       <span class="n">kiteBuilder</span><span class="o">.</span><span class="n">StringLength</span><span class="o">=</span><span class="mi">23</span>
+
+       <span class="n">kite</span><span class="o">=</span><span class="n">kiteBuilder</span><span class="o">.</span><span class="n">build</span><span class="p">()</span> <span class="c">#get a Kite instance</span>
+</pre></div>
+
+<p>When you set a property that you previously defined, it'll validate the value passed, given the fact that you have
+set it with validators, and will generate the appropriate exception when it fails.</p>
+
+<h2>
+<a name="mantainer" class="anchor" href="#mantainer"><span class="octicon octicon-link"></span></a>Mantainer</h2>
+
+<p>Currently this package is being mantained by <a href="https://github.com/bossiernesto" class="user-mention">@bossiernesto</a></p>
+      </section>
+      <footer>
+        <p>Project maintained by <a href="https://github.com/bossiernesto">bossiernesto</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
