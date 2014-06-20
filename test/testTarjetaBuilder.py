@@ -29,11 +29,21 @@ class CreditCardMetaBuilder(MetaBuilder):
         self.property("ccName", type=str, required=True)
         self.property("extraLogo", type=Logo)
 
+class CreditCardCascadeMetaBuilder(MetaBuilder):
+
+    def __init__(self):
+        MetaBuilder.__init__(self)
+        self.model(CreditCard)\
+        .property("ccnumber", type=str, length=16, required=True)\
+        .property("ccName", type=str, required=True)\
+        .property("extraLogo", type=Logo)
+
 
 class TestCreditCardMetaBuilder(TestCase):
 
     def setUp(self):
         self.cardBuilder = CreditCardMetaBuilder()
+        self.cascadeCardBuilder = CreditCardCascadeMetaBuilder()
 
     def CCBuild(self):
         creditcard = self.cardBuilder.build()
@@ -49,3 +59,11 @@ class TestCreditCardMetaBuilder(TestCase):
 
     def test_invalid_length_build(self):
         self.assertRaises(ValidatorError,self.cardBuilder.ccnumber,"543042222333444")
+
+    def test_normal_build_cascade(self):
+        self.cascadeCardBuilder.ccnumber = "5430422223333444"
+        self.cascadeCardBuilder.ccName = 'John Doe'
+        self.cascadeCardBuilder.build()
+
+    def test_invalid_length_build_cascade(self):
+        self.assertRaises(ValidatorError,self.cascadeCardBuilder.ccnumber,"543042222333444")
