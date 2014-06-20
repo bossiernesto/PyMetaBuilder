@@ -2,7 +2,7 @@ import unittest
 from PyMetabuilder.MetaBuilder import MetaBuilder, OptionValueError
 from pprint import pprint
 
-class TestearMetaBuilder(unittest.TestCase):
+class TestMetaBuilder(unittest.TestCase):
     def setUp(self):
         self.kite_builder = MetaBuilder()
 

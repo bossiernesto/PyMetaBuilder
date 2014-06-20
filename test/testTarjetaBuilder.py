@@ -9,7 +9,7 @@
 
 """
 from unittest import TestCase
-from PyMetabuilder import MetaBuilder
+from PyMetabuilder import MetaBuilder, ValidatorError
 
 
 class Logo:
