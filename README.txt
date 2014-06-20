@@ -25,7 +25,7 @@ eg.
     class Kite(object):
         pass
 
-    class KiteBuilder(MetaBuilder.MetaBuilder):
+    class KiteBuilder(MetaBuilder):
         pass
 
 .. note:: from version 0.2.1 onwards you can define the class model with the method model_by_name, thus you don't have to define a stub class in your code. For ex. calling model_by_name('Kite') instead of model(Kite)
@@ -35,7 +35,7 @@ properties you want KiteBuilder to have, for eg.
 
 ::
 
-    class KiteBuilder(MetaBuilder.MetaBuilder):
+    class KiteBuilder(MetaBuilder):
 
         def __init__(self):
             MetaBuilder.MetaBuilder.__init__(self)

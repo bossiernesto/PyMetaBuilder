@@ -19,7 +19,7 @@ from PyMetaBuilder import MetaBuilder
 class Kite(object):
     pass
 
-class KiteBuilder(MetaBuilder.MetaBuilder):
+class KiteBuilder(MetaBuilder):
     pass
 ```
 > **note**
@@ -31,7 +31,7 @@ class KiteBuilder(MetaBuilder.MetaBuilder):
 After that just initiate the superclass and start defining the properties you want KiteBuilder to have, for eg.
 
 ```python
-class KiteBuilder(MetaBuilder.MetaBuilder):
+class KiteBuilder(MetaBuilder):
 
     def __init__(self):
         MetaBuilder.MetaBuilder.__init__(self)
