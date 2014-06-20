@@ -8,11 +8,9 @@
 .. moduleauthor:: Ernesto Bossi <bossi.ernestog@gmail.com>
 
 """
-from types import MethodType
 from PyMetabuilder.metaUtils import *
 from PyMetabuilder.MetaBuilderMutator import *
 from PyMetabuilder.MetaBuilderCallbacks import *
-
 
 class MetaBuilder(object):
     """
@@ -184,13 +182,13 @@ class MetaBuilder(object):
         return instance
 
 
-class OptionValueError(StandardError):
+class OptionValueError(Exception):
     pass
 
 
-class ValidatorError(StandardError):
+class ValidatorError(Exception):
     pass
 
 
-class MetaBuilderError(StandardError):
+class MetaBuilderError(Exception):
     pass

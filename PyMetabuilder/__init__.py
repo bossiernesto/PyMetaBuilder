@@ -1,2 +1,2 @@
-from MetaBuilder import MetaBuilder
-from MetaBuilder import MetaBuilderError,ValidatorError,OptionValueError
+from PyMetabuilder.MetaBuilder import MetaBuilder,getMethods
+from PyMetabuilder.MetaBuilder import MetaBuilderError,ValidatorError,OptionValueError

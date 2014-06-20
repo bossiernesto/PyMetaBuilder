@@ -20,10 +20,10 @@ class CreditCard:
     pass
 
 
-class CreditCardMetaBuilder(MetaBuilder.MetaBuilder):
+class CreditCardMetaBuilder(MetaBuilder):
 
     def __init__(self):
-        MetaBuilder.MetaBuilder.__init__(self)
+        MetaBuilder.__init__(self)
         self.model(CreditCard)
         self.property("ccnumber", type=str, length=16, required=True)
         self.property("ccName", type=str, required=True)
@@ -48,4 +48,4 @@ class TestCreditCardMetaBuilder(TestCase):
         self.assertRaises(AttributeError,self.cardBuilder.build)
 
     def test_invalid_length_build(self):
-        self.assertRaises(MetaBuilder.ValidatorError,self.cardBuilder.ccnumber,"543042222333444")
+        self.assertRaises(ValidatorError,self.cardBuilder.ccnumber,"543042222333444")
