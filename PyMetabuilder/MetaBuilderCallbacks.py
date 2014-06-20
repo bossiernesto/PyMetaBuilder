@@ -2,14 +2,14 @@
 .. module:: MetaBuilder Validator Module
    :platform: Linux
    :synopsis: An small framework for creating builders or entities with validators. Module for processing callbacks.
-   :copyright: (c) 2013 by Ernesto Bossi.
+   :copyright: (c) 2013-14 by Ernesto Bossi.
    :license: GPL v3.
 
 .. moduleauthor:: Ernesto Bossi <bossi.ernestog@gmail.com>
 
 """
 from PyMetabuilder.metaUtils import getMeta_attr_name
-
+import six
 
 class GeneratorOfValidations(object):
 
@@ -19,8 +19,8 @@ class GeneratorOfValidations(object):
         Method to obtain all the validators and callables given a list of variable arguments.
         """
         validators = []
-        for kwarg, validateArg in kwargs.iteritems():
-            for callbackName, callback in builder._callbacks.iteritems():
+        for kwarg, validateArg in six.iteritems(kwargs):
+            for callbackName, callback in six.iteritems(builder._callbacks):
                 if callbackName == kwarg:
                     validators.append(MetaBuilderValidator(attribute, callback, validateArg))
             if hasattr(builder, kwarg):
@@ -42,7 +42,8 @@ class MetaBuilderValidator(object):
         :param validatorArg: value that will be passed to a callback.
         """
         calltype = type(validatorArg).__name__
-        _name = {'type': lambda arg: arg.__name__, 'instancemethod': lambda arg: "'{0}'".format(arg.__name__)}
+        _name = {'type': lambda arg: arg.__name__, 'instancemethod': lambda arg: "'{0}'".format(arg.__name__),
+                 'method': lambda arg: "'{0}'".format(arg.__name__)}
         if calltype in _name.keys():
             return _name[calltype](validatorArg)
         return validatorArg

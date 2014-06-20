@@ -8,7 +8,7 @@
 .. moduleauthor:: Ernesto Bossi <bossi.ernestog@gmail.com>
 
 """
-
+import six
 
 def getMethodsByName(p_object, name):
     return [method for method in getMethods(p_object) if name in method]
@@ -41,7 +41,7 @@ def is_attribute_defined(obj, attribute):
 
 
 def getAttributes(obj):
-    return [prop for (prop, value) in vars(obj).iteritems()]
+    return [prop for (prop, value) in six.iteritems(vars(obj))]
 
 
 def createvar_if_not_exists(obj, var, initial):
