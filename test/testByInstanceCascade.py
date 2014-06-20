@@ -6,9 +6,9 @@ class TestMetaBuilder(unittest.TestCase):
         self.kite_builder = MetaBuilder()
 
         #create a kite
-        self.kite_builder.model_by_name('Kite')
-        self.kite_builder.property('string_material', one_of=["linen", "normal_string"])
-        self.kite_builder.property('kite_shape', required=True)
+        self.kite_builder.model_by_name('Kite')\
+            .property('string_material', one_of=["linen", "normal_string"])\
+            .property('kite_shape', required=True)
 
     def test_kite_bad_setup(self):
         self.kite_builder.kite_shape = 'an strange material'

@@ -122,6 +122,7 @@ class MetaBuilder(object):
     def model_by_name(self, className):
         self.klass = type(className.title(), (), {})
         self.model(self.klass)
+        return self
 
     def model(self, klass):
         """
@@ -131,6 +132,7 @@ class MetaBuilder(object):
         """
         createvar_if_not_exists(self, "_model", klass)
         self._model = klass
+        return self
 
     def property(self, attribute, *args, **kwargs):
         """
@@ -154,6 +156,7 @@ class MetaBuilder(object):
         else:
             self.mutator.build_property(self, attribute, None)
         self._properties.append(attribute)
+        return self
 
     def properties(self):
         """

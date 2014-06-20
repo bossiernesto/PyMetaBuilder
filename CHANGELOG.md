@@ -1,3 +1,13 @@
+## 0.2.6 (2013-06-20)
+
+Bugfixes:
+
+  - N/A
+
+Features:
+
+  - enable the Metabuilder instance to be called by cascade methods.
+
 ## 0.2.5 (2013-06-20)
 
 Bugfixes:
