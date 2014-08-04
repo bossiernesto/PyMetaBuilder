@@ -1,6 +1,6 @@
 # PyMetaBuilder
 
-[![Build Status](https://travis-ci.org/bossiernesto/PyMetaBuilder|.svg)](https://travis-ci.org/bossiernesto/PyMetaBuilder)
+[![Build Status](https://travis-ci.org/bossiernesto/PyMetaBuilder.svg)](https://travis-ci.org/bossiernesto/PyMetaBuilder)
 [![Latest Version](http://img.shields.io/github/tag/bossiernesto/PyMetaBuilder.svg)](https://github.com/bossiernesto/PyMetaBuilder/releases)
 
 ## Introduction
