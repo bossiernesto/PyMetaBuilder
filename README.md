@@ -1,5 +1,7 @@
 # PyMetaBuilder
 
+[![Latest Version](http://img.shields.io/github/tag/bossiernesto/PyMetaBuilder.svg)](https://github.com/bossiernesto/PyMetaBuilder/releases)
+
 ## Introduction
 
 Small framework to create entities and Builders with Metaprogramming features in Python.
